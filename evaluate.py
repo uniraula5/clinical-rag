@@ -4,6 +4,7 @@ test questions in eval/test_cases.json.
 
 Each test question lists the answers (doc_ids) that correctly answer it.
 A search "hits" if at least one of them shows up in the top K results.
+Runs semantic, keyword and hybrid search on the same questions to compare them.
 
     python evaluate.py
 """
@@ -12,6 +13,8 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
+from hybrid_search import hybrid_search
+from keyword_search import KeywordIndex
 from search import get_collection, semantic_search
 
 TEST_CASES_PATH = Path(__file__).parent / "eval" / "test_cases.json"
@@ -78,8 +81,23 @@ def print_report(name, rows, k=K):
 if __name__ == "__main__":
     test_cases = load_test_cases()
     collection = get_collection()
+    keyword_index = KeywordIndex()
 
-    def semantic(query, k):
-        return semantic_search(query, n_results=k, collection=collection)
+    # every method gets the same (query, k) shape so evaluate() can run all three
+    methods = {
+        "Semantic search": lambda q, k: semantic_search(q, n_results=k, collection=collection),
+        "Keyword search (BM25)": lambda q, k: keyword_index.search(q, k),
+        "Hybrid search (RRF)": lambda q, k: hybrid_search(
+            q, n_results=k, collection=collection, keyword_index=keyword_index
+        ),
+    }
 
-    print_report("Semantic search", evaluate(semantic, test_cases))
+    summaries = {}
+    for name, search_fn in methods.items():
+        rows = evaluate(search_fn, test_cases)
+        print_report(name, rows)
+        summaries[name] = summarize(rows)
+
+    print(f"\n=== Comparison: hit@{K} / MRR ===")
+    for name, s in summaries.items():
+        print(f"  {name:22s} {s['hit_rate']:.2f} / {s['mrr']:.2f}")
