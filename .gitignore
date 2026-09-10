@@ -1,0 +1,9 @@
+.venv/
+venv/
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+.idea/
+.env
+data/raw/
+chroma_db/
