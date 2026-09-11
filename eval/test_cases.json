@@ -30,5 +30,21 @@
   {"id": "e13", "category": "exact_term", "query": "Is MELAS inherited?", "relevant_doc_ids": ["GARD_0004085-3", "GHR_0000662-4"]},
   {"id": "e14", "category": "exact_term", "query": "How many people have hereditary pancreatitis?", "relevant_doc_ids": ["GHR_0000470-2"]},
   {"id": "e15", "category": "exact_term", "query": "What are the symptoms of Aicardi-Goutieres syndrome type 3?", "relevant_doc_ids": ["GARD_0000195-2"]},
-  {"id": "e16", "category": "exact_term", "query": "Symptoms of juvenile osteoporosis", "relevant_doc_ids": ["GARD_0003327-2"]}
+  {"id": "e16", "category": "exact_term", "query": "Symptoms of juvenile osteoporosis", "relevant_doc_ids": ["GARD_0003327-2"]},
+  {"id": "g01", "category": "gene_symbol", "query": "What condition is linked to mutations in the DMD gene?", "relevant_doc_ids": ["GHR_0000294-3", "GHR_0000306-3"]},
+  {"id": "g02", "category": "gene_symbol", "query": "What condition is linked to mutations in the F9 gene?", "relevant_doc_ids": ["GHR_0000450-3"]},
+  {"id": "g03", "category": "gene_symbol", "query": "What condition is linked to mutations in the HBB gene?", "relevant_doc_ids": ["GARD_0006056-3", "GHR_0000119-3", "GHR_0000649-3", "GHR_0000911-3"]},
+  {"id": "g04", "category": "gene_symbol", "query": "What condition is linked to mutations in the FMR1 gene?", "relevant_doc_ids": ["GARD_0002417-3", "GHR_0000381-3", "GHR_0000382-3", "GHR_0000383-3"]},
+  {"id": "g05", "category": "gene_symbol", "query": "What condition is linked to mutations in the PAH gene?", "relevant_doc_ids": ["GHR_0000792-3"]},
+  {"id": "g06", "category": "gene_symbol", "query": "What condition is linked to mutations in the NF1 gene?", "relevant_doc_ids": ["GARD_0004373-3", "GHR_0000724-3"]},
+  {"id": "g07", "category": "gene_symbol", "query": "What condition is linked to mutations in the PKD1 gene?", "relevant_doc_ids": ["GHR_0000804-3"]},
+  {"id": "g08", "category": "gene_symbol", "query": "What condition is linked to mutations in the GBA gene?", "relevant_doc_ids": ["GHR_0000400-3"]},
+  {"id": "g09", "category": "gene_symbol", "query": "What condition is linked to mutations in the TSC1 gene?", "relevant_doc_ids": ["GARD_0005300-3", "GHR_0000609-3", "GHR_0000999-3"]},
+  {"id": "g10", "category": "gene_symbol", "query": "What condition is linked to mutations in the LRRK2 gene?", "relevant_doc_ids": ["SeniorHealth_0000052-2"]},
+  {"id": "g11", "category": "gene_symbol", "query": "What condition is linked to mutations in the SERPINA1 gene?", "relevant_doc_ids": ["GARD_0000254-3", "GHR_0000041-3"]},
+  {"id": "g12", "category": "gene_symbol", "query": "What condition is linked to mutations in the PTPN11 gene?", "relevant_doc_ids": ["GHR_0000691-3", "GHR_0000738-3"]},
+  {"id": "g13", "category": "gene_symbol", "query": "What condition is linked to mutations in the ABCD1 gene?", "relevant_doc_ids": ["GHR_0001045-3"]},
+  {"id": "g14", "category": "gene_symbol", "query": "What condition is linked to mutations in the UBE3A gene?", "relevant_doc_ids": ["GARD_0000347-3", "GHR_0000058-3"]},
+  {"id": "g15", "category": "gene_symbol", "query": "What condition is linked to mutations in the RET gene?", "relevant_doc_ids": ["GHR_0000481-3", "GHR_0000688-3", "GHR_0000737-3"]},
+  {"id": "g16", "category": "gene_symbol", "query": "What condition is linked to mutations in the GALT gene?", "relevant_doc_ids": ["GHR_0000397-3"]}
 ]

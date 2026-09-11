@@ -1,0 +1,49 @@
+id,category,query,Semantic search,Keyword search (BM25),Hybrid search (RRF)
+p01,paraphrase,My doctor found a kidney stone. How do they get rid of it?,1,,4
+p02,paraphrase,What medicines or lifestyle changes help lower hypertension?,3,3,1
+p03,paraphrase,What does a shingles outbreak look and feel like?,1,5,4
+p04,paraphrase,What are the early warning signs of Parkinson's?,1,1,1
+p05,paraphrase,"Why would someone keep wheezing, coughing, and feel tightness in their chest?",,1,3
+p06,paraphrase,My mother had breast cancer. Am I more likely to get it?,1,,4
+p07,paraphrase,Is going gluten free the only way to manage celiac disease?,2,2,2
+p08,paraphrase,How can older adults keep their bones from getting weak and breaking?,,,
+p09,paraphrase,What tests do doctors use to check for Alzheimer's?,1,3,1
+p10,paraphrase,How can you tell if someone is having a stroke?,2,1,1
+p11,paraphrase,How do doctors test a baby for cystic fibrosis?,1,1,1
+p12,paraphrase,Why do red blood cells turn into a sickle shape?,2,1,2
+p13,paraphrase,Can you catch hepatitis C from sharing needles?,1,,
+p14,paraphrase,What does a gout attack feel like?,3,2,2
+p15,paraphrase,What problems does lupus cause in the body?,,,
+p16,paraphrase,Am I at risk of getting type 2 diabetes?,2,1,2
+e01,exact_term,Is Prader-Willi syndrome inherited?,1,1,1
+e02,exact_term,Wilson disease treatment options,1,2,1
+e03,exact_term,How common is Tay-Sachs disease?,1,,2
+e04,exact_term,What genetic changes cause Marfan syndrome?,1,,2
+e05,exact_term,Is Huntington disease inherited?,1,1,1
+e06,exact_term,What causes Fragile X syndrome?,1,2,1
+e07,exact_term,How is Kawasaki disease treated?,1,1,1
+e08,exact_term,Symptoms of hemophilia B,2,3,1
+e09,exact_term,Crohn disease genetic changes,1,1,1
+e10,exact_term,How is Down syndrome diagnosed?,3,1,2
+e11,exact_term,What is Wolff-Parkinson-White syndrome?,1,1,1
+e12,exact_term,Symptoms of celiac artery compression syndrome,1,4,1
+e13,exact_term,Is MELAS inherited?,1,2,1
+e14,exact_term,How many people have hereditary pancreatitis?,1,1,1
+e15,exact_term,What are the symptoms of Aicardi-Goutieres syndrome type 3?,1,1,1
+e16,exact_term,Symptoms of juvenile osteoporosis,2,2,2
+g01,gene_symbol,What condition is linked to mutations in the DMD gene?,,4,4
+g02,gene_symbol,What condition is linked to mutations in the F9 gene?,,1,2
+g03,gene_symbol,What condition is linked to mutations in the HBB gene?,1,1,1
+g04,gene_symbol,What condition is linked to mutations in the FMR1 gene?,1,1,1
+g05,gene_symbol,What condition is linked to mutations in the PAH gene?,,2,1
+g06,gene_symbol,What condition is linked to mutations in the NF1 gene?,1,1,1
+g07,gene_symbol,What condition is linked to mutations in the PKD1 gene?,2,1,1
+g08,gene_symbol,What condition is linked to mutations in the GBA gene?,3,1,1
+g09,gene_symbol,What condition is linked to mutations in the TSC1 gene?,1,1,1
+g10,gene_symbol,What condition is linked to mutations in the LRRK2 gene?,1,1,1
+g11,gene_symbol,What condition is linked to mutations in the SERPINA1 gene?,,1,2
+g12,gene_symbol,What condition is linked to mutations in the PTPN11 gene?,4,2,1
+g13,gene_symbol,What condition is linked to mutations in the ABCD1 gene?,1,1,1
+g14,gene_symbol,What condition is linked to mutations in the UBE3A gene?,,1,2
+g15,gene_symbol,What condition is linked to mutations in the RET gene?,5,1,1
+g16,gene_symbol,What condition is linked to mutations in the GALT gene?,1,1,1

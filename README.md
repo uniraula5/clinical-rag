@@ -31,34 +31,49 @@ data/raw/*.csv        12 MedQuAD source files          47,457 rows
 
 ## Results
 
-### Retrieval: 32 curated test questions (`python evaluate.py`)
+### Retrieval: 48 curated test questions (`python evaluate.py`)
 
-16 questions are phrased the way a patient would ask ("keep bones from
-breaking"). 16 use exact condition names with near-identical traps
-("Wolff-Parkinson-White" vs. Parkinson disease, "Aicardi-Goutieres type 3" vs.
-types 1, 2, 4, 5).
+Three kinds of question, 16 each:
+- **Patient phrasing:** everyday wording ("keep bones from breaking").
+- **Exact names:** condition names with near-identical traps
+  ("Wolff-Parkinson-White" vs. Parkinson disease, "Aicardi-Goutieres type 3"
+  vs. types 1, 2, 4, 5).
+- **Gene symbols:** only a gene symbol that appears in answer text but never
+  in a question title ("What condition is linked to mutations in the PAH gene?").
 
-| Method | hit@5 | MRR | Exact names (hit@5 / MRR) | Patient phrasing (hit@5 / MRR) |
+| Method | All 48 (hit@5 / MRR) | Patient phrasing | Exact names | Gene symbols |
 |---|---|---|---|---|
-| **Semantic** | **0.91** | **0.75** | 1.00 / 0.90 | 0.81 / 0.60 |
-| Keyword (BM25) | 0.78 | 0.58 | 0.88 / 0.66 | 0.69 / 0.49 |
-| Hybrid (RRF) | 0.91 | 0.69 | 1.00 / 0.88 | 0.81 / 0.51 |
+| Semantic | 0.83 / 0.67 | **0.81 / 0.60** | **1.00 / 0.90** | 0.69 / 0.52 |
+| Keyword (BM25) | 0.85 / 0.68 | 0.69 / 0.49 | 0.88 / 0.66 | **1.00 / 0.89** |
+| **Hybrid (RRF)** | **0.94 / 0.75** | 0.81 / 0.51 | 1.00 / 0.88 | 1.00 / 0.86 |
 
 hit@5 = share of questions with a correct answer in the top 5.
 MRR = mean of 1/rank of the first correct answer.
 
-**The hypothesis was that hybrid search would beat semantic search on exact
-clinical names. It didn't.** Semantic search got all 16 exact-name questions.
-Each chunk is embedded together with its question title, which already anchors
-the vector to the condition name. Equal-weight fusion helped on a few
-questions but pulled good semantic results down when keyword search was wrong.
-So the answer pipeline uses semantic search, and hybrid stays available in the
-app's Search tab. Every correct answer semantic search found was already in its
-top 3 (hit@3 = hit@5 = 0.91), so the pipeline sends only the top 3 to the LLM.
+**Exact names:** the hypothesis was that hybrid search would beat semantic
+search here. It didn't. Semantic search got all 16, because each chunk is
+embedded together with its question title, which anchors the vector to the
+condition name.
 
-A small follow-up probe suggests keyword search still matters for identifiers
-that don't appear in question titles, such as gene symbols: "HEXA gene" was
-missed by semantic search but ranked first by keyword search.
+**Gene symbols:** this is where keyword search matters. Semantic search found
+a correct answer for only 11 of 16; keyword and hybrid search found all 16. A
+rare token like `PAH` or `GALT` means little to a small embedding model, but
+it's exactly what BM25 weights most. This category was added after the first
+32 questions showed no hybrid benefit, to test identifiers directly. The 6
+genes from an earlier informal check were left out, and correct answers were
+labeled by a fixed rule: "genetic changes" or "causes" answers containing
+"<SYMBOL> gene".
+
+**Overall, hybrid search is best** (0.94 hit@5 vs. 0.83 for semantic). It keeps
+semantic search's strength on phrasing and names and keyword search's strength
+on identifiers. On patient phrasing its MRR is still lower than semantic alone
+(0.51 vs. 0.60), because equal-weight fusion can push a good semantic result
+down when keyword search is wrong.
+
+The answer pipeline still uses semantic search (chosen from the first 32
+questions), so gene-symbol questions in the Ask tab currently get weaker
+sources. Switching the pipeline to hybrid search is the next step.
+Per-question ranks for every method are in `eval/retrieval_results.csv`.
 
 ### Answers: 8 of the test questions (`python evaluate_answers.py`)
 
@@ -115,7 +130,7 @@ python evaluate_answers.py                            # answer eval (calls the L
 python -m pytest
 ```
 
-44 tests, about 2 seconds. They run offline, with no API key, no index and
+46 tests, about 2 seconds. They run offline, with no API key, no index and
 no LLM calls: the LLM and the database are replaced with small fakes. They
 cover the cleaning rules, the 100-word chunk limit and overlap, one result
 per answer, BM25 and rank-fusion scoring, the citation and claim checks, the
@@ -142,7 +157,8 @@ skipped if the data hasn't been downloaded).
 | `app.py` | Gradio web demo |
 | `evaluate.py` | Retrieval eval: hit@5 and MRR for all three search methods |
 | `evaluate_answers.py` | Answer eval: fact-check pass rates |
-| `eval/test_cases.json` | 32 test questions with their correct answer IDs |
+| `eval/test_cases.json` | 48 test questions with their correct answer IDs |
+| `eval/retrieval_results.csv` | Rank of the first correct answer per question, per method |
 | `tests/` | Offline pytest suite (fake LLM and fake database) |
 | `conftest.py` | Lets the tests import the project's modules |
 
@@ -160,7 +176,7 @@ skipped if the data hasn't been downloaded).
   (~1,600 prompt tokens per call). Groq's free tier allows 8,000 tokens per
   minute, so a question needing a revision (4 calls) hit the limit and waited on
   retries. 3 sources is ~1,050 tokens per call, with no loss in retrieval on the
-  eval (hit@3 = hit@5).
+  first 32 eval questions (hit@3 = hit@5).
 - **Two layers of checking.** Plain code checks that every sentence has a
   citation and that each citation number exists. The LLM then checks whether
   each sentence is actually supported by the source it cites.
@@ -176,8 +192,8 @@ skipped if the data hasn't been downloaded).
 - **The same model writes and checks answers.** The check measures whether
   answers stick to their sources, not whether the sources are medically
   current. The checker can also be wrong in either direction.
-- **The eval sets are small and curated** (32 retrieval questions, 8 answer
-  questions). One question moves hit@5 by about 3 points. LLM results vary a
+- **The eval sets are small and curated** (48 retrieval questions, 8 answer
+  questions). One question moves a category's hit@5 by about 6 points. LLM results vary a
   little between runs.
 - **Groq's free tier limits how much it can be used.** For this model it allows
   8,000 tokens per minute and 200,000 per day. One question uses roughly 3,000

@@ -9,6 +9,7 @@ Runs semantic, keyword and hybrid search on the same questions to compare them.
     python evaluate.py
 """
 
+import csv
 import json
 from collections import defaultdict
 from pathlib import Path
@@ -18,6 +19,7 @@ from keyword_search import KeywordIndex
 from search import get_collection, semantic_search
 
 TEST_CASES_PATH = Path(__file__).parent / "eval" / "test_cases.json"
+RESULTS_PATH = Path(__file__).parent / "eval" / "retrieval_results.csv"
 K = 5
 
 
@@ -78,6 +80,33 @@ def print_report(name, rows, k=K):
             print(f"      top result was: {r['top_result']}")
 
 
+def print_comparison(all_rows, k=K):
+    # one line per method, one column per category, each cell "hit@k / MRR"
+    categories = sorted({r["category"] for rows in all_rows.values() for r in rows})
+    columns = ["all"] + categories
+    print(f"\n=== Comparison: hit@{k} / MRR ===")
+    print(f"  {'':22s}" + "".join(f"{c:>14s}" for c in columns))
+    for name, rows in all_rows.items():
+        cells = []
+        for column in columns:
+            subset = rows if column == "all" else [r for r in rows if r["category"] == column]
+            s = summarize(subset)
+            cells.append(f"{s['hit_rate']:.2f} / {s['mrr']:.2f}")
+        print(f"  {name:22s}" + "".join(f"{c:>14s}" for c in cells))
+
+
+def save_ranks(all_rows, test_cases, path=RESULTS_PATH):
+    # one row per question: the rank of the first correct answer for each method (blank = missed)
+    names = list(all_rows)
+    with open(path, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["id", "category", "query"] + names)
+        for i, case in enumerate(test_cases):
+            ranks = [all_rows[name][i]["rank"] or "" for name in names]
+            writer.writerow([case["id"], case["category"], case["query"]] + ranks)
+    print(f"\nSaved per-question ranks to {path}")
+
+
 if __name__ == "__main__":
     test_cases = load_test_cases()
     collection = get_collection()
@@ -92,12 +121,11 @@ if __name__ == "__main__":
         ),
     }
 
-    summaries = {}
+    all_rows = {}
     for name, search_fn in methods.items():
         rows = evaluate(search_fn, test_cases)
         print_report(name, rows)
-        summaries[name] = summarize(rows)
+        all_rows[name] = rows
 
-    print(f"\n=== Comparison: hit@{K} / MRR ===")
-    for name, s in summaries.items():
-        print(f"  {name:22s} {s['hit_rate']:.2f} / {s['mrr']:.2f}")
+    print_comparison(all_rows)
+    save_ranks(all_rows, test_cases)
