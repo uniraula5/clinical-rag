@@ -13,8 +13,8 @@ whatever a language model happens to remember.
 
 ```
 question
-  -> semantic search (search.py)             top 5 of 15,795 answers
-  -> write a cited answer (answer.py)        the LLM may only use those 5 sources
+  -> semantic search (search.py)             top 3 of 15,795 answers
+  -> write a cited answer (answer.py)        the LLM may only use those 3 sources
   -> fact-check it (verify.py)               valid citations? every sentence supported?
   -> problems found? revise once (pipeline.py)
   -> answer + fact-check result + sources (app.py)
@@ -53,7 +53,8 @@ Each chunk is embedded together with its question title, which already anchors
 the vector to the condition name. Equal-weight fusion helped on a few
 questions but pulled good semantic results down when keyword search was wrong.
 So the answer pipeline uses semantic search, and hybrid stays available in the
-app's Search tab.
+app's Search tab. Every correct answer semantic search found was already in its
+top 3 (hit@3 = hit@5 = 0.91), so the pipeline sends only the top 3 to the LLM.
 
 A small follow-up probe suggests keyword search still matters for identifiers
 that don't appear in question titles, such as gene symbols: "HEXA gene" was
@@ -61,18 +62,28 @@ missed by semantic search but ranked first by keyword search.
 
 ### Answers: 8 of the test questions (`python evaluate_answers.py`)
 
-| | |
-|---|---|
-| Correct source among the 5 used | 7 / 8 |
-| First draft passed the fact check | 4 / 8 |
-| Needed a revision | 4 / 8 |
-| Final answer passed the fact check | 8 / 8 |
-| Supported sentences, first draft → final | 77% → 100% |
+One run per setting. The current setting gives the LLM 3 sources instead of 5,
+to stay under Groq's free-tier token limits (see Design decisions).
+
+| | 5 sources (first version) | **3 sources (current)** |
+|---|---|---|
+| Correct source among those used | 7 / 8 | 7 / 8 |
+| First draft passed the fact check | 4 / 8 | 5 / 8 |
+| Needed a revision | 4 / 8 | 3 / 8 |
+| Final answer passed the fact check | 8 / 8 | 6 / 8 |
+| Supported sentences, first draft → final | 77% → 100% | 74% → 93% |
+
+With 8 questions, one question moves a row by 1/8, and the same question can
+pass on one run and fail on the next, so the two columns are within
+run-to-run noise. In testing, the failures that remain are small over-reaches
+the strict checker catches, such as adding "which often involves needles" to a
+source that only says "injected illegal drugs".
 
 Typical catch: asked about wheezing and chest tightness, the first draft said
 these are "typical of asthma" and cited two sources that describe asthma but
 never list those symptoms. The checker flagged it, and the revision kept only
-what the sources say. Per-question details are in `eval/answer_results.json`.
+what the sources say. Per-question details from the 5-source run are in
+`eval/answer_results.json`.
 
 ## Setup
 
@@ -126,10 +137,14 @@ python evaluate_answers.py                            # answer eval (calls the L
 - **Chunk size was measured, not guessed.** The embedding model silently
   ignores anything past 256 tokens. At 150 words per chunk, 3.7% of chunks were
   cut off; at 100 words, 99.8% fit.
-- **Embeddings run locally** (`all-MiniLM-L6-v2`). Only the question and the 5
+- **Embeddings run locally** (`all-MiniLM-L6-v2`). Only the question and the 3
   retrieved public passages are sent to the LLM.
-- **The LLM reads up to 350 words per source,** centered on the chunk that
-  matched, not just the 100-word chunk, so it has enough context to answer.
+- **The LLM reads 3 sources of up to 350 words each,** centered on the chunk
+  that matched, not just the 100-word chunk. The first version sent 5 sources
+  (~1,600 prompt tokens per call). Groq's free tier allows 8,000 tokens per
+  minute, so a question needing a revision (4 calls) hit the limit and waited on
+  retries. 3 sources is ~1,050 tokens per call, with no loss in retrieval on the
+  eval (hit@3 = hit@5).
 - **Two layers of checking.** Plain code checks that every sentence has a
   citation and that each citation number exists. The LLM then checks whether
   each sentence is actually supported by the source it cites.
@@ -148,8 +163,12 @@ python evaluate_answers.py                            # answer eval (calls the L
 - **The eval sets are small and curated** (32 retrieval questions, 8 answer
   questions). One question moves hit@5 by about 3 points. LLM results vary a
   little between runs.
-- **Answers are slow on Groq's free tier:** 28 to 113 seconds per question in
-  testing, likely mostly waiting on rate limits. A revision adds two more LLM calls.
+- **Groq's free tier limits how much it can be used.** For this model it allows
+  8,000 tokens per minute and 200,000 per day. One question uses roughly 3,000
+  to 6,000 tokens: a single question takes about 8 seconds, but several in a row
+  wait on rate-limit retries (4 to 53 seconds each in the eval), and the daily
+  limit allows a few dozen questions. Running the answer eval several times in
+  one day used up the daily limit.
 - Hybrid search uses equal weights. It wasn't tuned, to avoid fitting the test set.
 - About 0.2% of chunks are still longer than the embedding model's token limit.
 - MedQuAD content was collected around 2017 and may be out of date.

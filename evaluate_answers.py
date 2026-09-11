@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     n = len(records)
     print(f"\nQuestions:                          {n}")
-    print(f"Correct source among the 5 used:    {sum(r['correct_source_retrieved'] for r in records)}/{n}")
+    print(f"Correct source among those used:  {sum(r['correct_source_retrieved'] for r in records)}/{n}")
     print(f"First draft passed the check:       {sum(r['draft_passed'] for r in records)}/{n}")
     print(f"Needed a revision:                  {sum(r['revised'] for r in records)}/{n}")
     print(f"Final answer passed the check:      {sum(r['final_passed'] for r in records)}/{n}")

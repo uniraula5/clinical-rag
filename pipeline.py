@@ -1,12 +1,15 @@
 """
 The full question-answering pipeline:
 
-  1. retrieve - semantic search finds the 5 most relevant answers (search.py)
+  1. retrieve - semantic search finds the 3 most relevant answers (search.py)
   2. answer   - the LLM writes a cited answer from those sources only (answer.py)
   3. check    - citations and every claim are checked against the sources (verify.py)
   4. revise   - if the check found problems, the LLM fixes them once and it's checked again
 
 Semantic search is used because it scored best on the retrieval eval (evaluate.py).
+Only its top 3 are used: every correct answer it found in the eval was already in
+the top 3, and fewer, shorter sources keep each LLM call well under Groq's free-tier
+limit of 8,000 tokens per minute.
 
     python pipeline.py "How is Wilson disease treated?"
 """
@@ -18,7 +21,7 @@ from clean_data import clean_medquad
 from search import get_collection, semantic_search
 from verify import verify_answer
 
-N_SOURCES = 5
+N_SOURCES = 3
 MAX_WORDS_PER_SOURCE = 350
 MAX_REVISIONS = 1
 
