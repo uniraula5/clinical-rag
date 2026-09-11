@@ -109,6 +109,20 @@ python evaluate.py                                    # retrieval eval
 python evaluate_answers.py                            # answer eval (calls the LLM)
 ```
 
+## Tests
+
+```bash
+python -m pytest
+```
+
+44 tests, about 2 seconds. They run offline, with no API key, no index and
+no LLM calls: the LLM and the database are replaced with small fakes. They
+cover the cleaning rules, the 100-word chunk limit and overlap, one result
+per answer, BM25 and rank-fusion scoring, the citation and claim checks, the
+one-revision cap, and the eval math. One test also confirms that every
+labeled answer in `eval/test_cases.json` exists in the cleaned data (it's
+skipped if the data hasn't been downloaded).
+
 ## Project files
 
 | File | Purpose |
@@ -129,6 +143,8 @@ python evaluate_answers.py                            # answer eval (calls the L
 | `evaluate.py` | Retrieval eval: hit@5 and MRR for all three search methods |
 | `evaluate_answers.py` | Answer eval: fact-check pass rates |
 | `eval/test_cases.json` | 32 test questions with their correct answer IDs |
+| `tests/` | Offline pytest suite (fake LLM and fake database) |
+| `conftest.py` | Lets the tests import the project's modules |
 
 ## Design decisions
 
