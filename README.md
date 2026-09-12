@@ -57,7 +57,7 @@ condition name.
 
 **Gene symbols:** this is where keyword search matters. Semantic search found
 a correct answer for only 11 of 16; keyword and hybrid search found all 16. A
-rare token like `PAH` or `GALT` means little to a small embedding model, but
+rare token like `PAH` or `F9` means little to a small embedding model, but
 it's exactly what BM25 weights most. This category was added after the first
 32 questions showed no hybrid benefit, to test identifiers directly. The 6
 genes from an earlier informal check were left out, and correct answers were
