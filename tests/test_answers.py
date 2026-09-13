@@ -91,6 +91,7 @@ def make_pipeline(monkeypatch, checks):
     """A QAPipeline with fake sources and a fake LLM. `checks` is the list of
     pass/fail results the fact-checker will return, in order."""
     pipe = object.__new__(QAPipeline)  # skip __init__, which loads the real index
+    pipe.cache = {}
     pipe.get_sources = lambda question: [
         {"number": 1, "doc_id": "D", "source": "S", "question": "q", "score": 0.9, "text": "source text"}
     ]
@@ -124,3 +125,40 @@ def test_ask_skips_revision_when_draft_passes(monkeypatch):
     result = pipe.ask("question")
     assert [s["step"] for s in result["steps"]] == ["draft"]
     assert result["answer"] == "draft [1]."
+
+
+def test_ask_answers_the_same_question_from_memory(monkeypatch):
+    pipe = make_pipeline(monkeypatch, [PASS, PASS])
+    writes = []
+    monkeypatch.setattr(pipeline, "generate_answer",
+                        lambda question, sources_text: writes.append(question) or "draft [1].")
+
+    first = pipe.ask("Same question?")
+    second = pipe.ask("  same QUESTION?  ")  # spacing and capitals shouldn't matter
+
+    assert second is first          # the saved result comes straight back
+    assert len(writes) == 1         # the LLM ran only once
+    assert pipe.ask("Different question?", use_cache=False) is not first
+
+
+def test_get_sources_uses_hybrid_search_with_both_indexes(monkeypatch):
+    pipe = object.__new__(QAPipeline)
+    pipe.collection = "fake-collection"
+    pipe.keyword_index = "fake-keyword-index"
+    pipe.full_answers = {"D": "the full answer text"}
+    calls = {}
+
+    def fake_hybrid(question, n_results, collection, keyword_index):
+        calls.update(question=question, n_results=n_results, collection=collection, keyword_index=keyword_index)
+        return [{"doc_id": "D", "source": "S", "question": "q", "score": 0.03,
+                 "found_by": ["semantic", "keyword"], "text": "Question: q\nAnswer: the full answer text"}]
+
+    monkeypatch.setattr(pipeline, "hybrid_search", fake_hybrid)
+    sources = pipe.get_sources("a question")
+
+    assert calls["collection"] == "fake-collection"
+    assert calls["keyword_index"] == "fake-keyword-index"
+    assert calls["n_results"] == pipeline.N_SOURCES
+    assert sources[0]["number"] == 1
+    assert sources[0]["found_by"] == ["semantic", "keyword"]
+    assert sources[0]["text"] == "the full answer text"

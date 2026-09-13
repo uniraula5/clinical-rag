@@ -1,15 +1,18 @@
 """
 The full question-answering pipeline:
 
-  1. retrieve - semantic search finds the 3 most relevant answers (search.py)
+  1. retrieve - hybrid search finds the 3 most relevant answers (hybrid_search.py)
   2. answer   - the LLM writes a cited answer from those sources only (answer.py)
   3. check    - citations and every claim are checked against the sources (verify.py)
   4. revise   - if the check found problems, the LLM fixes them once and it's checked again
 
-Semantic search is used because it scored best on the retrieval eval (evaluate.py).
-Only its top 3 are used: every correct answer it found in the eval was already in
-the top 3, and fewer, shorter sources keep each LLM call well under Groq's free-tier
-limit of 8,000 tokens per minute.
+Hybrid search (semantic + keyword) is used because it scored best on the retrieval
+eval: 0.94 hit@5 against 0.83 for semantic search alone, mostly because semantic
+search misses gene symbols like PAH. Only the top 3 answers are used, which keeps
+each LLM call under Groq's free-tier limit of 8,000 tokens per minute.
+
+The same question is answered from memory the second time, so clicking an example
+twice in the demo does not spend tokens again.
 
     python pipeline.py "How is Wilson disease treated?"
 """
@@ -18,7 +21,9 @@ import sys
 
 from answer import format_sources, generate_answer, revise_answer
 from clean_data import clean_medquad
-from search import get_collection, semantic_search
+from hybrid_search import hybrid_search
+from keyword_search import KeywordIndex
+from search import get_collection
 from verify import verify_answer
 
 N_SOURCES = 3
@@ -53,14 +58,17 @@ def passage_for(full_answer, chunk_text, max_words=MAX_WORDS_PER_SOURCE):
 
 
 class QAPipeline:
-    def __init__(self, collection=None):
+    def __init__(self, collection=None, keyword_index=None):
         self.collection = collection if collection is not None else get_collection()
+        self.keyword_index = keyword_index if keyword_index is not None else KeywordIndex()
         # full answer text for every doc_id, so the LLM reads more than one 100-word chunk
         data = clean_medquad(verbose=False)
         self.full_answers = dict(zip(data["doc_id"], data["answer"]))
+        self.cache = {}
 
     def get_sources(self, question):
-        results = semantic_search(question, n_results=N_SOURCES, collection=self.collection)
+        results = hybrid_search(question, n_results=N_SOURCES, collection=self.collection,
+                                keyword_index=self.keyword_index)
         return [
             {
                 "number": i,
@@ -68,12 +76,17 @@ class QAPipeline:
                 "source": r["source"],
                 "question": r["question"],
                 "score": r["score"],
+                "found_by": r.get("found_by", []),
                 "text": passage_for(self.full_answers[r["doc_id"]], r["text"]),
             }
             for i, r in enumerate(results, start=1)
         ]
 
-    def ask(self, question):
+    def ask(self, question, use_cache=True):
+        key = question.strip().lower()
+        if use_cache and key in self.cache:
+            return self.cache[key]
+
         sources = self.get_sources(question)
         sources_text = format_sources(sources)
 
@@ -88,13 +101,15 @@ class QAPipeline:
             check = verify_answer(answer, sources_text, len(sources))
             steps.append({"step": "revision", "answer": answer, **check})
 
-        return {
+        result = {
             "question": question,
             "answer": answer,
             "passed": check["passed"],
             "sources": sources,
             "steps": steps,
         }
+        self.cache[key] = result
+        return result
 
 
 def print_result(result):

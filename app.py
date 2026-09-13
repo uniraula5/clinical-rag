@@ -10,6 +10,7 @@ Needs the index (python build_index.py) and, for the Ask tab, a Groq key in .env
 """
 
 import gradio as gr
+from openai import RateLimitError
 
 from hybrid_search import hybrid_search
 from keyword_search import KeywordIndex
@@ -54,13 +55,19 @@ def source_name(code):
 
 # ---------- Ask tab ----------
 
+def found_by(source):
+    # hybrid search records which method(s) found each answer
+    methods = source.get("found_by")
+    return f" · found by {' + '.join(methods)}" if methods else ""
+
+
 def format_sources(sources):
     blocks = []
     for s in sources:
         excerpt = s["text"] if len(s["text"]) <= 600 else s["text"][:600] + "..."
         blocks.append(
             f"**[{s['number']}] {s['question']}**  \n"
-            f"{source_name(s['source'])} · similarity {s['score']:.2f} · `{s['doc_id']}`\n\n"
+            f"{source_name(s['source'])} · score {s['score']:.3f}{found_by(s)} · `{s['doc_id']}`\n\n"
             f"> {excerpt}"
         )
     return "\n\n".join(blocks)
@@ -87,10 +94,18 @@ def run_ask(question):
         return "Type a question.", "", ""
     try:
         result = pipeline.ask(question)
-    except Exception as error:
-        # usually a missing Groq key or a rate limit; still show what search found
+    except RateLimitError:
+        # the free tier allows 8,000 tokens a minute and 200,000 a day
         sources = pipeline.get_sources(question)
-        message = f"Couldn't write an answer ({type(error).__name__}). The sources search found are below."
+        message = ("**Groq's free limit was reached.** Wait a minute and try again, or try "
+                   "tomorrow if the daily limit is used up. Search still works without the LLM, "
+                   "and the sources this question found are below.")
+        return message, "", format_sources(sources)
+    except Exception as error:
+        # most likely a missing or wrong API key; the error type is shown, never its text
+        sources = pipeline.get_sources(question)
+        message = (f"**Couldn't write an answer ({type(error).__name__}).** Check that .env has "
+                   "your Groq key. The sources search found are below.")
         return message, "", format_sources(sources)
 
     if result["passed"]:

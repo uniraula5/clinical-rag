@@ -18,6 +18,11 @@ from openai import OpenAI
 
 load_dotenv(Path(__file__).parent / ".env")
 
+# the openai package waits 10 minutes per request by default, so one bad
+# connection can freeze the demo. 30 seconds is plenty: a normal call takes 1-2.
+REQUEST_TIMEOUT_SECONDS = 30
+MAX_RETRIES = 5  # helps with the free tier's rate limits
+
 _client = None
 
 
@@ -27,8 +32,12 @@ def get_client():
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise RuntimeError("No API key found. Copy .env.example to .env and add your Groq key.")
-        # extra retries help with the free tier's rate limits
-        _client = OpenAI(api_key=api_key, base_url=os.getenv("OPENAI_API_BASE"), max_retries=5)
+        _client = OpenAI(
+            api_key=api_key,
+            base_url=os.getenv("OPENAI_API_BASE"),
+            timeout=REQUEST_TIMEOUT_SECONDS,
+            max_retries=MAX_RETRIES,
+        )
     return _client
 
 
