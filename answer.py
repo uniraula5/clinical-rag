@@ -16,6 +16,10 @@ Rules:
 - End every sentence with the citation(s) it came from, in square brackets like [1] or [2][3].
   Do not use any other citation format.
 - Use only what the sources actually say. Do not add outside medical knowledge, even if you know it is true.
+- Each sentence must be supported by a single source on its own. Cite a second source only when it
+  says the same thing. Never combine a fact from one source with a fact from another in one sentence.
+- Do not explain how or why something works unless a source explains it. No mechanisms, no extra
+  detail, no examples the sources do not give.
 - If the sources do not answer the question, reply with exactly: {NO_ANSWER}
 - Write 3 to 6 sentences in plain language.
 - Do not diagnose anyone or tell the reader what to do about their own health.

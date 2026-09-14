@@ -8,6 +8,19 @@ The data is [MedQuAD](https://github.com/abachaa/MedQuAD), a public set of
 medical questions and answers from government health websites. Nothing here
 is medical advice.
 
+## If you only have five minutes
+
+- **The result worth reading** is under "How good is the search?": semantic search
+  wins on plain language, loses badly on gene symbols, and hybrid search wins
+  overall. That comparison is the point of the project.
+- **The evidence:** `eval/test_cases.json` (48 questions and their correct
+  answers), `evaluate.py` (scores them), `eval/retrieval_results.csv` (where each
+  method ranked the correct answer for every question).
+- **The whole answer flow** is `pipeline.py`, about 120 lines: search, write,
+  fact-check, rewrite once.
+- **`python -m pytest`** runs 63 tests in about 2 seconds with no API key, no
+  index and no LLM calls.
+
 ## What it looks like
 
 ```bash
@@ -16,30 +29,35 @@ python pipeline.py "How is Wilson disease treated?"
 
 ```
 --- draft (1 problem(s)) ---
-Wilson disease has no cure, but treatments focus on lowering the copper that
-builds up in the body [1][3]. People usually need to take medications that help
-remove excess copper and may also follow a low-copper diet, and these measures
-must be continued for life [1]. ...
-  ! Not supported by its source: "...may also follow a low-copper diet..." [1]
-    (Source mentions medications and dietary modifications, but does not
-    explicitly specify a low-copper diet.)
+Wilson disease has no cure, but therapies exist that aim to reduce or control the
+amount of copper that builds up in the body [1]. Affected individuals require
+lifelong treatment that may include certain medications [1]. Dietary modifications
+to lower copper intake are also part of the management plan [1]. If treatment is
+not effective or liver failure develops, a liver transplant may be necessary [1].
+  ! Not supported by its source: "Dietary modifications to lower copper intake are
+    also part of the management plan [1]." (Source 1 mentions dietary modifications
+    but does not specify they are to lower copper intake.)
 
 --- revision (passed) ---
-Wilson disease has no cure, but treatments aim to reduce or control the copper
-that builds up in the body [1][3]. Treatment may include certain medications and
-dietary modifications, and it must be continued for life [1]. If treatment is not
-effective or liver failure develops, a liver transplant may be necessary [1].
-Without treatment, Wilson disease can cause brain damage, liver failure, and
-death, so lifelong therapy is required [2].
+Wilson disease has no cure, but therapies aim to reduce or control the amount of
+copper that accumulates in the body [1]. Affected individuals require lifelong
+treatment that may include medications and dietary modifications [1]. If treatment
+is not effective or liver failure develops, a liver transplant may be necessary [1].
+When the disorder is detected early and treated appropriately, a person can usually
+enjoy normal health and a normal lifespan [2]. Dietary changes may involve reducing
+copper intake by avoiding high-copper foods such as shellfish, liver, mushrooms,
+nuts, and chocolate [4].
 
 Sources:
   [1] GARD  | What are the treatments for Wilson disease?
   [2] NINDS | What is the outlook for Wilson Disease?
   [3] GARD  | What is (are) Wilson disease?
+  [4] NIDDK | What to do for Wilson Disease?
 ```
 
-The first answer said "low-copper diet", which the source doesn't actually say.
-The checker caught it and the second version stuck to the source.
+The draft said dietary changes are "to lower copper intake". Source 1 never says
+that, so the checker rejected the sentence. The rewrite dropped the claim, and
+added the copper foods from source 4, which does say it.
 
 The web demo shows the same thing with the sources underneath, plus a second
 tab for comparing search methods.
@@ -141,12 +159,14 @@ and switch between the three methods:
 You can also run things from the command line:
 
 ```bash
-python pipeline.py "How is Wilson disease treated?"   # full answer + fact check
-python search.py "symptoms of leukemia"               # semantic search only
-python keyword_search.py "Is MELAS inherited?"        # keyword search only
-python hybrid_search.py "HEXA gene"                   # both combined
-python evaluate.py                                    # how good is the search
-python evaluate_answers.py                            # how good are the answers (uses the LLM)
+python pipeline.py "How is Wilson disease treated?"     # full answer + fact check
+python search.py "symptoms of leukemia"                 # semantic search only
+python keyword_search.py "Is MELAS inherited?"          # keyword search only
+python evaluate.py                                      # how good is the search
+python evaluate_answers.py                              # how good are the answers (uses the LLM)
+
+# both searches combined
+python hybrid_search.py "What condition is linked to mutations in the PAH gene?"
 ```
 
 ## How it works
@@ -175,8 +195,7 @@ data/raw/*.csv        12 MedQuAD files                 47,457 rows
 
 ### How good is the search? (48 test questions, `python evaluate.py`)
 
-I wrote 48 questions and marked which answers are correct for each one, in
-three groups of 16:
+The eval has 48 questions with the correct answers marked, in three groups of 16:
 
 - **Patient phrasing** — how a person actually talks: "keep bones from breaking"
 - **Exact names** — condition names with lookalikes: "Wolff-Parkinson-White"
@@ -237,25 +256,34 @@ Per-question ranks for all three methods are in `eval/retrieval_results.csv`.
 This runs the whole pipeline on 12 of the 48 questions (every 4th one), so it
 scores the answers and not just the search.
 
-| | 3 sources | 4 sources (now) |
-|---|---|---|
-| A correct source was among those used | 9 / 12 | **11 / 12** |
-| First draft passed the fact check | 8 / 12 | 6 / 12 |
-| Needed one rewrite | 4 / 12 | 6 / 12 |
-| Final answer passed the fact check | 9 / 12 | 9 / 12 |
-| Sentences supported by their source | 81% → 91% | 77% → **92%** |
+| | 3 sources | 4 sources | 4 + stricter rules (now) |
+|---|---|---|---|
+| A correct source was among those used | 9 / 12 | 11 / 12 | **11 / 12** |
+| First draft passed the fact check | 8 / 12 | 6 / 12 | 7 / 12 |
+| Needed one rewrite | 4 / 12 | 6 / 12 | 5 / 12 |
+| Final answer passed the fact check | 9 / 12 | 9 / 12 | **12 / 12** |
+| Sentences supported by their source | 81% → 91% | 77% → 92% | 82% → **100%** |
 
-Three still failed, and the reasons changed once search got better. Only one
-(hepatitis C spread) is still a case where search never found the right answer.
-In the other two the right source was there and the writer added detail the source
-doesn't have: that shock wave lithotripsy "fragments the stone so it can be passed
-in the urine", and a step-by-step mechanism for the TSC1 gene. The checker is
-strict about that, which is the direction I would rather it erred in for medical text.
+The failures were never random. Once search improved, what was left was the writer
+adding detail the sources don't have, in two shapes: gluing a fact from one source
+to a fact from another in one sentence and citing both, and explaining a mechanism
+the source never explains. So the writer now has two extra rules: one fact per
+sentence from a single source, and no explaining how something works unless the
+source explains it. That took the final answers from 9 of 12 to 12 of 12.
 
-Sending 4 sources instead of 3 also made first drafts a little worse (6 of 12
-passed, against 8 of 12). With more material in front of it, the writer more often
-merges two sources into one sentence and cites both. The rewrite step catches most
-of that, and the share of supported sentences still ends higher, at 92%.
+Two honest notes about that 12 of 12:
+
+- **One of them is a refusal.** For "Can you catch hepatitis C from sharing
+  needles?" search still finds no source that mentions needles, so the answer is
+  "The sources I found don't answer this question." It passes because it claims
+  nothing. That is the behaviour I want, but it isn't an answer.
+- **The rules were written after reading the failures from these same 12
+  questions,** which is a mild form of fitting the test. The rules target a general
+  habit rather than these questions, and no question or label was changed, but a
+  clean check would need questions I haven't seen.
+
+Answers didn't get shorter to please the checker: they run 43 to 111 words, still
+3 to 6 sentences. What changed is one fact per sentence, with one citation.
 
 The numbers move a little between runs, because the LLM doesn't produce identical
 output twice. Per-question details are in `eval/answer_results.json`.
@@ -266,7 +294,7 @@ output twice. Per-question details are in `eval/answer_results.json`.
 python -m pytest
 ```
 
-55 tests, about 2 seconds. They don't need an API key, the index, or any LLM
+63 tests, about 2 seconds. They don't need an API key, the index, or any LLM
 calls, because fake versions of the LLM and database are used. They check the
 cleaning rules, the chunk size limit and overlap, one result per answer, the
 search and ranking math, the citation and claim checks, the rewrite limit, the
@@ -328,6 +356,9 @@ answer cache, the eval scoring, and the setup checker.
   is actually supported by the source it cites.
 - **Citations get fixed in code.** The model sometimes writes them in its own
   style (`【4†L1-L4】`), which made every sentence fail the citation check.
+- **One fact per sentence, from one source.** The writer used to merge two sources
+  into a sentence and cite both, and explain mechanisms the sources never state.
+  Two rules against that took the answer score from 9 of 12 to 12 of 12.
 - **Only one rewrite.** If the second version still fails, it is shown with a
   warning rather than hidden.
 - **The same question is answered from memory** the second time, so clicking an
@@ -338,9 +369,11 @@ answer cache, the eval scoring, and the setup checker.
 - **The same model writes the answer and checks it.** That measures whether the
   answer sticks to its sources, not whether it is medically right, and the
   checker can be wrong in both directions.
-- **The test sets are small** (48 search questions, 8 answer questions) and I
-  wrote them myself, so one question moves a group's score by about 6 points.
-  LLM results also move a little between runs.
+- **The test sets are small** (48 search questions, 12 answer questions), so one
+  question moves a group's score by about 6 points. LLM results also move a little
+  between runs. The gene questions were labelled by a rule rather than by hand,
+  which is stated where they're described; the other two groups were labelled by
+  matching the condition name and question type.
 - **Groq's free tier is limited:** 8,000 tokens a minute and 200,000 a day, which
   is a few dozen questions. Running the answer scoring uses a big chunk of that.
 - Hybrid search weights both methods equally. I did not tune it, so the score

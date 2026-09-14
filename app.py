@@ -23,6 +23,8 @@ EXAMPLE_QUESTIONS = [
     "Is Huntington disease inherited?",
     "What causes kidney stones?",
     "What are the symptoms of a stroke?",
+    # a gene symbol: keyword search finds this one, semantic search alone does not
+    "What condition is linked to mutations in the PAH gene?",
 ]
 
 SOURCE_NAMES = {
