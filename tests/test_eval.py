@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from evaluate import evaluate, first_hit_rank, load_test_cases, save_ranks, summarize
+from evaluate import evaluate, first_hit_rank, hit_at_k, load_test_cases, print_hit_at_k_table, save_ranks, summarize
 
 HAS_DATA = any((Path(__file__).parent.parent / "data" / "raw").glob("*.csv"))
 needs_data = pytest.mark.skipif(not HAS_DATA, reason="needs the MedQuAD data (python download_data.py)")
@@ -74,3 +74,25 @@ def test_save_ranks_writes_one_row_per_question(tmp_path):
     save_ranks(all_rows, cases, path)
     # a miss is written as an empty cell
     assert path.read_text().splitlines() == ["id,category,query,Semantic,Keyword", "1,c,q1,1,3", "2,c,q2,,2"]
+
+
+def test_hit_at_k_counts_ranks_up_to_k():
+    rows = [{"rank": 1}, {"rank": 3}, {"rank": None}, {"rank": 5}]
+    assert hit_at_k(rows, 1) == 0.25   # only the rank-1 question
+    assert hit_at_k(rows, 3) == 0.50   # ranks 1 and 3
+    assert hit_at_k(rows, 5) == 0.75   # a miss never counts, whatever k is
+
+
+def test_hit_at_k_table_shows_every_method_and_category(capsys):
+    all_rows = {
+        "Semantic": [{"rank": 1, "category": "paraphrase"}, {"rank": None, "category": "gene_symbol"}],
+        "Hybrid": [{"rank": 2, "category": "paraphrase"}, {"rank": 1, "category": "gene_symbol"}],
+    }
+    print_hit_at_k_table(all_rows, max_k=3)
+    printed = capsys.readouterr().out
+
+    assert "hit@1" in printed and "hit@3" in printed
+    for label in ["Semantic", "Hybrid", "all", "paraphrase", "gene_symbol"]:
+        assert label in printed
+    # semantic: 1 of 2 questions found by rank 3; hybrid: both
+    assert "    0.50" in printed and "    1.00" in printed

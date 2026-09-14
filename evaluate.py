@@ -95,6 +95,24 @@ def print_comparison(all_rows, k=K):
         print(f"  {name:22s}" + "".join(f"{c:>14s}" for c in cells))
 
 
+def hit_at_k(rows, k):
+    """Share of questions with a correct answer in the top k."""
+    return sum(1 for r in rows if r["rank"] and r["rank"] <= k) / len(rows)
+
+
+def print_hit_at_k_table(all_rows, max_k=K):
+    # The answer pipeline only sends its top few sources to the LLM, so this table
+    # is what decides how many sources it should send.
+    categories = sorted({r["category"] for rows in all_rows.values() for r in rows})
+    print("\n=== hit@k: how often a correct answer is in the top k ===")
+    print(f"  {'method':22s}{'category':13s}" + "".join(f"{'hit@' + str(k):>8s}" for k in range(1, max_k + 1)))
+    for name, rows in all_rows.items():
+        for category in ["all"] + categories:
+            subset = rows if category == "all" else [r for r in rows if r["category"] == category]
+            cells = "".join(f"{hit_at_k(subset, k):>8.2f}" for k in range(1, max_k + 1))
+            print(f"  {name:22s}{category:13s}{cells}")
+
+
 def save_ranks(all_rows, test_cases, path=RESULTS_PATH):
     # one row per question: the rank of the first correct answer for each method (blank = missed)
     names = list(all_rows)
@@ -128,4 +146,5 @@ if __name__ == "__main__":
         all_rows[name] = rows
 
     print_comparison(all_rows)
+    print_hit_at_k_table(all_rows)
     save_ranks(all_rows, test_cases)

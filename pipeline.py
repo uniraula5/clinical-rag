@@ -1,15 +1,20 @@
 """
 The full question-answering pipeline:
 
-  1. retrieve - hybrid search finds the 3 most relevant answers (hybrid_search.py)
+  1. retrieve - hybrid search finds the 4 most relevant answers (hybrid_search.py)
   2. answer   - the LLM writes a cited answer from those sources only (answer.py)
   3. check    - citations and every claim are checked against the sources (verify.py)
   4. revise   - if the check found problems, the LLM fixes them once and it's checked again
 
 Hybrid search (semantic + keyword) is used because it scored best on the retrieval
 eval: 0.94 hit@5 against 0.83 for semantic search alone, mostly because semantic
-search misses gene symbols like PAH. Only the top 3 answers are used, which keeps
-each LLM call under Groq's free-tier limit of 8,000 tokens per minute.
+search misses gene symbols like PAH.
+
+Four sources are sent to the LLM. With three, hybrid search only found a correct
+answer for 62% of the plain-language questions, because one wrong keyword result
+can take a slot. A fourth slot lifts that to 81% and gene symbols to 100%, and
+five sources score no better while costing more tokens (run `python evaluate.py`
+to see the hit@k table this came from).
 
 The same question is answered from memory the second time, so clicking an example
 twice in the demo does not spend tokens again.
@@ -26,7 +31,7 @@ from keyword_search import KeywordIndex
 from search import get_collection
 from verify import verify_answer
 
-N_SOURCES = 3
+N_SOURCES = 4
 MAX_WORDS_PER_SOURCE = 350
 MAX_REVISIONS = 1
 

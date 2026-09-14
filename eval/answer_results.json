@@ -2,36 +2,38 @@
   {
     "id": "p01",
     "query": "My doctor found a kidney stone. How do they get rid of it?",
-    "correct_source_retrieved": false,
+    "correct_source_retrieved": true,
     "draft_passed": false,
     "revised": true,
     "final_passed": false,
-    "draft_supported_share": 0.25,
-    "final_supported_share": 0.5,
-    "seconds": 8.3,
-    "final_answer": "When a kidney stone will not pass on its own, doctors can treat it in several ways [1]. Shock wave lithotripsy is an option to break the stone into smaller pieces that can be passed later [3]. A ureteroscope can be used to remove the stone or to break it with lithotripsy while it is passed through the urinary tract [3]. Percutaneous nephrolithotomy is a surgical approach that can be used to take the stone out [3].",
+    "draft_supported_share": 0.4,
+    "final_supported_share": 0.6,
+    "seconds": 9.4,
+    "final_answer": "If the stone is small it often passes on its own, but larger stones that won\u2019t pass need medical treatment [1][4]. Doctors can break the stone using shock waves, a method called shock\u2011wave lithotripsy, which fragments the stone so it can be passed in the urine [1][3]. Another option is to use a ureteroscope inserted through the urethra to remove the stone or break it [1][3]. For very large stones or those that block urine flow, surgeons may perform percutaneous nephrolithotomy to remove the stone [3][1]. After removal, the stone can be sent to a lab to determine its type, which helps guide future prevention [2].",
     "draft_problems": [
-      "Not supported by its source: \"One option is shock\u2011wave lithotripsy, which uses focused sound waves to break the stone into smaller pieces that can be passed in the urine [1][3].\" (Sources mention shock\u2011wave lithotripsy but do not describe it as using focused sound waves to break the stone; that detail is not in [1] or [3].)",
-      "Not supported by its source: \"Another method is using a thin tube called a ureteroscope that is passed through the urethra to locate and either retrieve the stone or break it with a laser [1][3].\" (Sources note use of a scope/ureteroscope and lithotripsy, but do not specify a thin tube called a ureteroscope passed through the urethra or breaking the stone with a laser; the laser detail is absent.)",
-      "Not supported by its source: \"For larger or more difficult stones, surgery such as percutaneous nephrolithotomy may be performed to take the stone out directly [3].\" (Source [3] lists percutaneous nephrolithotomy as a treatment option but does not explicitly state it is used for larger or more difficult stones; that condition is not directly cited.)"
+      "Not supported by its source: \"Another option is to insert a thin tube called a ureteroscope through the urethra to reach and either remove the stone or break it with a laser, a procedure known as ureteroscopy [1][3].\" (Sources mention ureteroscope but do not specify a laser or define ureteroscopy as described)",
+      "Not supported by its source: \"For very large stones or those that block urine flow, surgeons may perform percutaneous nephrolithotomy, a small incision in the back to take the stone out, or other surgical removal methods [3][1].\" (Sources list percutaneous nephrolithotomy but do not describe it as a small back incision)",
+      "Not supported by its source: \"After removal, the stone is often sent to a lab to identify its type, which helps guide future prevention [2][4].\" (Source 2 supports lab analysis; source 4 does not mention sending stones to a lab)"
     ],
     "final_problems": [
-      "Not supported by its source: \"Shock wave lithotripsy is an option to break the stone into smaller pieces that can be passed later [3].\" (Source [3] lists shock wave lithotripsy as a treatment but does not describe it as breaking the stone into smaller pieces for later passage.)",
-      "Not supported by its source: \"Percutaneous nephrolithotomy is a surgical approach that can be used to take the stone out [3].\" (Source [3] lists percutaneous nephrolithotomy as a treatment but does not specify it as a surgical approach, so the added detail is not directly supported.)"
+      "Not supported by its source: \"Doctors can break the stone using shock waves, a method called shock\u2011wave lithotripsy, which fragments the stone so it can be passed in the urine [1][3].\" (Sources mention shock wave lithotripsy but do not explicitly state it fragments stones to be passed in urine)",
+      "Not supported by its source: \"For very large stones or those that block urine flow, surgeons may perform percutaneous nephrolithotomy to remove the stone [3][1].\" (Source 1 does not mention percutaneous nephrolithotomy, so the claim is not supported by all cited sources)"
     ]
   },
   {
     "id": "p05",
     "query": "Why would someone keep wheezing, coughing, and feel tightness in their chest?",
     "correct_source_retrieved": true,
-    "draft_passed": true,
-    "revised": false,
+    "draft_passed": false,
+    "revised": true,
     "final_passed": true,
-    "draft_supported_share": 1.0,
+    "draft_supported_share": 0.75,
     "final_supported_share": 1.0,
-    "seconds": 22.9,
-    "final_answer": "Persistent wheezing, coughing, and chest tightness are common symptoms of both acute and chronic bronchitis, which involve inflammation of the bronchial tubes and excess mucus production [1][2]. In acute bronchitis, these signs often follow a cold or flu and may include a lingering dry cough, wheeze, and a feeling of tightness in the chest [1]. Chronic bronchitis, a form of COPD, also produces ongoing cough, wheezing, and chest discomfort due to long\u2011term irritation from smoking or other pollutants [1][2]. Similar symptoms are characteristic of asthma, where airway inflammation causes coughing, wheezing, chest tightness, and shortness of breath, especially at night or with triggers [3].",
-    "draft_problems": [],
+    "seconds": 78.4,
+    "final_answer": "Wheezing, coughing, and chest tightness are symptoms of both acute and chronic bronchitis, where the airways become inflamed and may produce mucus [1][2]. In acute bronchitis, the cough can last 10 to 20\u202fdays and may be accompanied by wheezing and a feeling of tightness or pain in the chest [1]. Chronic bronchitis, a form of COPD, also features coughing, wheezing, and chest discomfort due to long\u2011term irritation of the bronchial tubes, often from smoking or other pollutants [1][2]. Similar symptoms are also typical of asthma, a condition in which airway inflammation causes wheezing, coughing (often worse at night or early morning), and a sensation of the chest being squeezed [3].",
+    "draft_problems": [
+      "Not supported by its source: \"Persistent wheezing, coughing, and chest tightness are common symptoms of both acute and chronic bronchitis, where the airways become inflamed and may produce mucus [1][2].\" (Adds 'persistent wheezing' not stated in sources)"
+    ],
     "final_problems": []
   },
   {
@@ -43,8 +45,8 @@
     "final_passed": true,
     "draft_supported_share": 1.0,
     "final_supported_share": 1.0,
-    "seconds": 28.0,
-    "final_answer": "Doctors cannot definitively diagnose Alzheimer\u2019s while a person is alive because the only sure way is to examine brain tissue after death through an autopsy [1][2]. Instead, they ask about overall health, past medical problems, daily activities, and any changes in behavior or personality [1][2]. They also give cognitive tests that measure memory, problem\u2011solving, attention, counting, and language skills [1][2]. Additionally, standard medical tests such as blood and urine analyses and brain scans are performed to look for abnormal findings or other possible causes [1][2].",
+    "seconds": 13.3,
+    "final_answer": "Doctors start by asking about overall health, past medical problems, daily activities and any changes in behavior or personality [1]. They then give tests that measure memory, problem\u2011solving, attention, counting and language skills [1][2]. Standard medical tests such as blood and urine analyses are also done to rule out other conditions [1][2]. Finally, brain imaging scans are performed to look for any abnormal findings in the brain [1][2].",
     "draft_problems": [],
     "final_problems": []
   },
@@ -55,17 +57,16 @@
     "draft_passed": false,
     "revised": true,
     "final_passed": false,
-    "draft_supported_share": 0.25,
-    "final_supported_share": 0.75,
-    "seconds": 69.0,
-    "final_answer": "Hepatitis C is a virus that causes inflammation of the liver [1]. It spreads when blood from an infected person comes into contact with another person\u2019s blood [1][2][3]. Because the virus is transmitted through blood, any activity that involves sharing blood can lead to infection [1][2][3]. A blood test can determine whether a person is infected with hepatitis C [1].",
+    "draft_supported_share": 0.3333333333333333,
+    "final_supported_share": 0.6666666666666666,
+    "seconds": 66.9,
+    "final_answer": "Hepatitis\u202fC spreads when blood from a person infected with the virus contacts another person\u2019s blood [1][2][3]. Sharing needles can cause blood from one person to enter another, so this type of contact can transmit hepatitis\u202fC [1][2][3]. If someone thinks they may have been exposed, a blood test can determine whether they are infected [1].",
     "draft_problems": [
-      "Not supported by its source: \"Sharing needles creates that direct blood\u2011to\u2011blood contact, which is a recognized way the virus can be passed\u202f[1][3].\" (Sources do not mention sharing needles)",
-      "Not supported by its source: \"Because the virus travels through infected blood, using a needle that has been used by an infected person can lead to infection\u202f[1][3].\" (Sources do not mention using a previously used needle)",
-      "Not supported by its source: \"Therefore, sharing needles is a risk factor for catching hepatitis\u202fC\u202f[1][3].\" (Sources do not list sharing needles as a risk factor)"
+      "Not supported by its source: \"Sharing needles or other equipment that can be contaminated with blood is a common way this type of contact happens[1][2].\" (Neither source mentions sharing needles or equipment as a common transmission route.)",
+      "Not supported by its source: \"Because a needle can carry infected blood, using a needle that has been used by someone with hepatitis\u202fC can transmit the virus[1][3].\" (Sources do not specifically state that using a previously used needle can transmit hepatitis C.)"
     ],
     "final_problems": [
-      "Not supported by its source: \"Because the virus is transmitted through blood, any activity that involves sharing blood can lead to infection [1][2][3].\" (Sources do not claim that any activity involving sharing blood can lead to infection; the statement is broader than the cited information.)"
+      "Not supported by its source: \"Sharing needles can cause blood from one person to enter another, so this type of contact can transmit hepatitis\u202fC [1][2][3].\" (Sources mention blood contact but do not specifically mention needle sharing as a transmission route)"
     ]
   },
   {
@@ -77,8 +78,8 @@
     "final_passed": true,
     "draft_supported_share": 1.0,
     "final_supported_share": 1.0,
-    "seconds": 22.8,
-    "final_answer": "Most cases of Prader\u2011Willi syndrome are not inherited and result from random genetic changes that occur when eggs or sperm are formed or early in embryonic development [1][2]. These changes often involve a deletion of the paternal chromosome\u201115 region or maternal uniparental disomy, which typically appear without any family history of the disorder [1][2]. In rare instances, a genetic alteration that inactivates genes on the paternal chromosome\u201115 can be passed from one generation to the next, making inheritance possible but uncommon [1][2]. The risk to family members depends on the specific genetic cause in the affected person, and a genetics professional can provide detailed information about that risk [2].",
+    "seconds": 27.8,
+    "final_answer": "Most cases of Prader\u2011Willi syndrome are not inherited and arise from random genetic changes that occur when eggs or sperm are formed or early in embryonic development [1][2]. These non\u2011inherited forms typically involve either a deletion of the paternal chromosome\u202f15 or maternal uniparental disomy [1][2]. In rare instances, a genetic alteration that inactivates genes on the paternal chromosome\u202f15 can be passed from one generation to the next, so the condition can be inherited [1][2]. The risk to family members depends on the specific genetic cause, and a genetics professional can provide detailed information about that risk [2].",
     "draft_problems": [],
     "final_problems": []
   },
@@ -91,8 +92,8 @@
     "final_passed": true,
     "draft_supported_share": 1.0,
     "final_supported_share": 1.0,
-    "seconds": 17.9,
-    "final_answer": "Huntington disease is inherited in an autosomal dominant pattern, meaning that a single altered copy of the HTT gene is enough to cause the disorder [1][2]. Typically an affected person inherits the mutated gene from an affected parent, and each child of a parent with Huntington disease has a 50\u202f% chance of receiving the mutation [2]. In rare cases the disease can arise from a new (de novo) mutation, so a person may have Huntington disease without a known affected parent [2]. As the altered gene is passed from one generation to the next, the CAG trinucleotide repeat often expands, leading to earlier onset in later generations\u2014a phenomenon called anticipation [1][2][3].",
+    "seconds": 26.7,
+    "final_answer": "Huntington disease is inherited in an autosomal dominant pattern, meaning that a single altered copy of the HTT gene is enough to cause the disorder [1][2]. Usually an affected person inherits the mutated gene from an affected parent, and each child of a parent with Huntington disease has a 50% chance of inheriting the mutation [2]. In rare cases the disease can arise from a new (de novo) mutation, so a person may have no affected parent [2]. The CAG trinucleotide repeat often expands in successive generations, a phenomenon called anticipation that can lead to earlier onset in offspring [1][2].",
     "draft_problems": [],
     "final_problems": []
   },
@@ -105,8 +106,8 @@
     "final_passed": true,
     "draft_supported_share": 1.0,
     "final_supported_share": 1.0,
-    "seconds": 23.3,
-    "final_answer": "Crohn disease is linked to genetic variations on chromosomes\u202f5 and\u202f10, including the IBD5 locus on chromosome\u202f5 and other regions called \u201cgene deserts\u201d that may regulate nearby genes [1]. Specific gene variants that increase risk include ATG16L1, IRGM, NOD2, and IL23R, which encode proteins involved in immune function and bacterial response in the intestine [1]. These genetic changes can disrupt normal immune reactions to gut bacteria, leading to chronic intestinal inflammation characteristic of Crohn disease [1]. While the inheritance pattern is not fully defined, the disease tends to cluster in families, making a family history a notable risk factor [2].",
+    "seconds": 27.8,
+    "final_answer": "Crohn disease is linked to genetic variations on chromosomes\u202f5 and\u202f10, including the IBD5 locus and other \u201cgene\u2011desert\u201d regions that may regulate nearby genes [1]. Specific gene variants that increase risk include ATG16L1, IRGM, NOD2, and IL23R, which provide instructions for proteins involved in immune system function and bacterial response in the intestine [1]. These variations can disrupt normal intestinal cell responses to bacteria, leading to an abnormal immune reaction and chronic inflammation [1]. The condition tends to cluster in families, suggesting a genetic component, although the inheritance pattern is unclear because many genetic and environmental factors are involved [2][3]. Ongoing research continues to investigate how these genetic changes interact with other risk factors to influence the likelihood of developing Crohn disease [1][3].",
     "draft_problems": [],
     "final_problems": []
   },
@@ -119,25 +120,24 @@
     "final_passed": true,
     "draft_supported_share": 1.0,
     "final_supported_share": 1.0,
-    "seconds": 25.3,
-    "final_answer": "MELAS is caused by mutations in mitochondrial DNA, so it follows a maternal (mitochondrial) inheritance pattern [1]. Only egg cells contribute mitochondria to the embryo, meaning that only mothers can pass the mutation to their children [1][3]. The disorder can appear in every generation and affect both males and females, although fathers do not transmit it [1][3]. In most cases the altered mitochondrial gene is inherited from the mother, but occasionally a new mutation arises in a person with no family history [1][2][3].",
+    "seconds": 27.3,
+    "final_answer": "MELAS is caused by mutations in mitochondrial DNA and is passed down through the mother, a pattern called maternal or mitochondrial inheritance[1][2][3]. Only egg cells contribute mitochondria to the developing embryo, so fathers do not transmit the disorder to their children[1][3]. Because the altered mitochondria are present in all offspring of an affected mother, the condition can appear in every generation and affect both males and females[1][3]. In some cases, MELAS results from a new mutation that occurs spontaneously, so a person can have the disease without a family history[1][2][3].",
     "draft_problems": [],
     "final_problems": []
   },
   {
     "id": "g01",
     "query": "What condition is linked to mutations in the DMD gene?",
-    "correct_source_retrieved": false,
+    "correct_source_retrieved": true,
     "draft_passed": false,
     "revised": true,
     "final_passed": true,
-    "draft_supported_share": 0.5,
+    "draft_supported_share": 0.75,
     "final_supported_share": 1.0,
-    "seconds": 48.9,
-    "final_answer": "Mutations in the DMD gene cause Duchenne muscular dystrophy, a rapidly progressive form of muscular dystrophy that primarily affects boys [1]. The DMD gene encodes the muscle protein dystrophin, and loss of this protein leads to progressive loss of muscle function and weakness [1]. DMD\u2011associated dilated cardiomyopathy follows an X\u2011linked pattern of inheritance, and the DMD gene is located on the X chromosome [2]. Duchenne muscular dystrophy is inherited in an X\u2011linked recessive pattern, with most affected males inheriting the mutation from their carrier mothers [3].",
+    "seconds": 57.3,
+    "final_answer": "Mutations in the DMD gene cause Duchenne muscular dystrophy, a rapidly progressive form of muscular dystrophy that mainly affects boys [1]. The DMD gene provides instructions for making the protein dystrophin, and when functional dystrophin is missing or altered, muscle cells become damaged, leading to muscle weakness and heart problems [4]. The DMD gene is located on the X chromosome, so the condition follows an X\u2011linked recessive inheritance pattern, which means males are affected more often than females [3]. Mutations in the DMD gene can also cause Becker muscular dystrophy, a milder form that results from an abnormal version of dystrophin that still retains some function [4].",
     "draft_problems": [
-      "Not supported by its source: \"The same gene mutation can lead to DMD\u2011associated dilated cardiomyopathy, an X\u2011linked heart condition that appears earlier and more severely in males [2].\" (Source [2] describes inheritance and severity in males but does not explicitly state that the same DMD gene mutation causes DMD\u2011associated dilated cardiomyopathy.)",
-      "Not supported by its source: \"Both conditions follow an X\u2011linked recessive inheritance pattern, with most affected males inheriting the mutation from carrier mothers [3].\" (Source [3] covers X\u2011linked recessive inheritance for DMD but does not address inheritance of DMD\u2011associated dilated cardiomyopathy, so the claim about both conditions is not fully supported.)"
+      "Not supported by its source: \"In some cases, mutations in the same gene can also cause Becker muscular dystrophy, a milder form, but the classic link is with Duchenne muscular dystrophy [4].\" (Source [4] confirms the same gene can cause Becker, but it does not state that the \"classic link\" is with Duchenne; that claim is not in the cited source.)"
     ],
     "final_problems": []
   },
@@ -150,8 +150,8 @@
     "final_passed": true,
     "draft_supported_share": 1.0,
     "final_supported_share": 1.0,
-    "seconds": 27.4,
-    "final_answer": "Mutations in the PAH gene cause phenylketonuria, a disorder in which the body cannot properly process the amino acid phenylalanine\u202f[1]. The PAH gene provides instructions for the enzyme phenylalanine hydroxylase, which converts phenylalanine to other essential compounds\u202f[1]. When PAH mutations reduce the activity of this enzyme, phenylalanine can accumulate to toxic levels in the blood and tissues\u202f[1]. Less severe PAH mutations that allow some enzyme activity lead to milder forms such as variant PKU or non\u2011PKU hyperphenylalaninemia\u202f[1].",
+    "seconds": 27.0,
+    "final_answer": "Mutations in the PAH gene cause phenylketonuria (PKU) [1]. The PAH gene provides instructions for making the enzyme phenylalanine hydroxylase, which converts the amino acid phenylalanine into other important compounds in the body [1]. When PAH mutations reduce the activity of this enzyme, phenylalanine from the diet is not processed effectively and can accumulate to toxic levels in the blood and tissues [1]. PAH mutations that allow the enzyme to retain some activity result in milder versions of the condition, such as variant PKU or non\u2011PKU hyperphenylalaninemia [1].",
     "draft_problems": [],
     "final_problems": []
   },
@@ -163,28 +163,34 @@
     "revised": true,
     "final_passed": false,
     "draft_supported_share": 0.75,
-    "final_supported_share": 0.6666666666666666,
-    "seconds": 48.7,
-    "final_answer": "Mutations in the TSC1 gene can cause tuberous sclerosis complex, a disorder that leads to the growth of benign tumors in many organs of the body [1]. Mutations in the TSC1 gene are also found in lymphangioleiomyomatosis (LAM), a condition that involves tumors and cysts [3]. The TSC1 gene provides instructions for making the protein hamartin, which works with tuberin to help regulate cell growth and act as a tumor suppressor [1].",
+    "final_supported_share": 0.75,
+    "seconds": 57.8,
+    "final_answer": "Mutations in the TSC1 gene are one of the genetic changes that cause tuberous sclerosis complex [1]. In tuberous sclerosis complex, a person is born with one mutated copy of TSC1 in each cell, and loss of both copies prevents production of functional hamartin, leading to uncontrolled cell growth [1]. Mutations in TSC1 (and more commonly TSC2) also cause lymphangioleiomyomatosis, a disorder that produces tumors and cysts in the lungs [3]. Both conditions involve loss of the tumor\u2011suppressor proteins hamartin or tuberin, allowing cells to grow and divide in an uncontrolled way [1][3].",
     "draft_problems": [
-      "Not supported by its source: \"The same TSC1 mutations are also responsible for lymphangioleiomyomatosis (LAM), a condition characterized by abnormal growth of cells that form tumors and cysts, especially in the lungs [3].\" (Source 3 notes TSC1 mutations cause LAM but does not mention that the tumors/cysts are especially in the lungs, so that detail is not supported)"
+      "Not supported by its source: \"Mutations in the TSC1 gene cause tuberous sclerosis complex, a disorder in which benign tumors can develop in many organs\u202f[1].\" (Source mentions tumors but does not specify they are benign)"
     ],
     "final_problems": [
-      "Not supported by its source: \"Mutations in the TSC1 gene can cause tuberous sclerosis complex, a disorder that leads to the growth of benign tumors in many organs of the body [1].\" (Source mentions tumors but does not specify them as benign, adding detail not in source)"
+      "Not supported by its source: \"In tuberous sclerosis complex, a person is born with one mutated copy of TSC1 in each cell, and loss of both copies prevents production of functional hamartin, leading to uncontrolled cell growth [1].\" (Source 1 says a person is born with one mutated copy of TSC1 *or* TSC2; the sentence incorrectly specifies TSC1 only)"
     ]
   },
   {
     "id": "g13",
     "query": "What condition is linked to mutations in the ABCD1 gene?",
     "correct_source_retrieved": true,
-    "draft_passed": true,
-    "revised": false,
+    "draft_passed": false,
+    "revised": true,
     "final_passed": true,
-    "draft_supported_share": 1.0,
+    "draft_supported_share": 0.25,
     "final_supported_share": 1.0,
-    "seconds": 22.6,
-    "final_answer": "Mutations in the ABCD1 gene are responsible for a disorder called X\u2011linked adrenoleukodystrophy [1][3]. The ABCD1 gene makes a protein that helps move very long\u2011chain fatty acids into peroxisomes, and when it is mutated the protein is deficient [1]. This leads to a buildup of these fatty acids, which can damage the adrenal cortex and the myelin covering nerve fibers [1]. The disease follows an X\u2011linked inheritance pattern, affecting males more severely than females [3].",
-    "draft_problems": [],
+    "seconds": 57.2,
+    "final_answer": "Mutations in the\u202fABCD1\u202fgene cause X\u2011linked adrenoleukodystrophy, a disorder that results from a shortage of the adrenoleukodystrophy protein (ALDP) needed to transport very long\u2011chain fatty acids into peroxisomes [1]. The disease follows an X\u2011linked inheritance pattern, so a single altered copy of the\u202fABCD1\u202fgene is enough to cause the condition in males, while females with one altered copy usually do not show features but some may have related health problems [3]. The lack of functional ALDP disrupts breakdown of very long\u2011chain fatty acids, leading to their buildup in the body [1].",
+    "draft_problems": [
+      "No citation like [1]: \"Mutations in the ABCD1 gene cause X\u2011linked adrenoleukodystrophy, a disorder that affects the nervous system and adrenal glands.\"",
+      "No citation like [1]: \"The accumulation of fatty acids damages myelin and adrenal tissue, producing the signs and symptoms of X\u2011linked adrenoleukodystrophy.\"",
+      "Not supported by its source: \"Mutations in the ABCD1 gene cause X\u2011linked adrenoleukodystrophy, a disorder that affects the nervous system and adrenal glands.\" (No source cited; cannot verify claim despite being generally true)",
+      "Not supported by its source: \"The disease follows an X\u2011linked inheritance pattern, meaning that a single altered copy of the ABCD1 gene on the X chromosome can cause the condition in males, while females usually need two copies to show symptoms [3].\" (Source [3] does not state females need two altered copies; it says one copy usually does not cause features but some females are affected)",
+      "Not supported by its source: \"The accumulation of fatty acids damages myelin and adrenal tissue, producing the signs and symptoms of X\u2011linked adrenoleukodystrophy.\" (No citation provided; claim not linked to a source)"
+    ],
     "final_problems": []
   }
 ]

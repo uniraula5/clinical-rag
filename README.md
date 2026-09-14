@@ -155,8 +155,8 @@ Answering a question:
 
 ```
 question
-  -> hybrid search (hybrid_search.py)        top 3 of 15,795 answers
-  -> write an answer (answer.py)             the LLM may only use those 3 sources
+  -> hybrid search (hybrid_search.py)        top 4 of 15,795 answers
+  -> write an answer (answer.py)             the LLM may only use those 4 sources
   -> fact-check it (verify.py)               is every sentence really in its source?
   -> if not, rewrite once (pipeline.py)      the checker's complaints go back to the writer
   -> answer + fact check + sources (app.py)
@@ -212,27 +212,50 @@ left out, every question uses the same wording, and correct answers were picked
 by a rule instead of by hand: any "genetic changes" or "causes" answer whose
 text contains "<SYMBOL> gene".
 
+### How many sources should the Ask tab send?
+
+The pipeline only hands its top few answers to the LLM, so what matters there is
+hit@3 or hit@4, not hit@5. `python evaluate.py` prints a hit@k table, and it
+showed a problem I had missed:
+
+| Sources sent | All | Patient phrasing | Exact names | Gene symbols |
+|---|---|---|---|---|
+| 3 | 0.85 | 0.62 | 1.00 | 0.94 |
+| **4** | **0.94** | **0.81** | **1.00** | **1.00** |
+| 5 | 0.94 | 0.81 | 1.00 | 1.00 |
+
+With only three slots, one wrong keyword result can push out a correct semantic
+one. Four questions that semantic search ranked first, like the kidney stone and
+hepatitis C ones, fell to fourth place or off the list. A fourth slot fixes all
+of them for about 250 extra tokens per call, and a fifth adds nothing. So the
+pipeline sends **4 sources**.
+
 Per-question ranks for all three methods are in `eval/retrieval_results.csv`.
 
-### How good are the answers? (8 questions, `python evaluate_answers.py`)
+### How good are the answers? (12 questions, `python evaluate_answers.py`)
 
 This runs the whole pipeline on 12 of the 48 questions (every 4th one), so it
 scores the answers and not just the search.
 
-| | |
-|---|---|
-| A correct source was among the 3 used | 9 / 12 |
-| First draft passed the fact check | 8 / 12 |
-| Needed one rewrite | 4 / 12 |
-| Final answer passed the fact check | 9 / 12 |
-| Sentences supported by their source | 81% → 91% |
+| | 3 sources | 4 sources (now) |
+|---|---|---|
+| A correct source was among those used | 9 / 12 | **11 / 12** |
+| First draft passed the fact check | 8 / 12 | 6 / 12 |
+| Needed one rewrite | 4 / 12 | 6 / 12 |
+| Final answer passed the fact check | 9 / 12 | 9 / 12 |
+| Sentences supported by their source | 81% → 91% | 77% → **92%** |
 
-The three that still failed are worth knowing about. In two of them the search
-never found the right answer (kidney stone treatment, hepatitis C spread), so the
-writer only had loosely related sources to work from. In the third the checker
-objected to the word "benign" in front of "tumors" because the source doesn't say
-it. That is the checker being strict rather than the answer being wrong, which is
-the direction I would rather it erred in for medical text.
+Three still failed, and the reasons changed once search got better. Only one
+(hepatitis C spread) is still a case where search never found the right answer.
+In the other two the right source was there and the writer added detail the source
+doesn't have: that shock wave lithotripsy "fragments the stone so it can be passed
+in the urine", and a step-by-step mechanism for the TSC1 gene. The checker is
+strict about that, which is the direction I would rather it erred in for medical text.
+
+Sending 4 sources instead of 3 also made first drafts a little worse (6 of 12
+passed, against 8 of 12). With more material in front of it, the writer more often
+merges two sources into one sentence and cites both. The rewrite step catches most
+of that, and the share of supported sentences still ends higher, at 92%.
 
 The numbers move a little between runs, because the LLM doesn't produce identical
 output twice. Per-question details are in `eval/answer_results.json`.
@@ -293,11 +316,13 @@ answer cache, the eval scoring, and the setup checker.
 - **Chunks are 100 words.** The embedding model stops reading after 256 tokens
   and says nothing about it. At 150 words per chunk, 3.7% of chunks were being
   cut off. At 100 words, 99.8% fit.
-- **Embeddings run on your own machine.** Only the question and the 3 retrieved
+- **Embeddings run on your own machine.** Only the question and the 4 retrieved
   passages are sent to Groq.
-- **The LLM gets 3 sources, up to 350 words each,** centred on the part that
-  matched. Sending 5 sources of 350 words used ~1,600 tokens per call, which
-  went over Groq's per-minute limit when an answer had to be rewritten.
+- **The LLM gets 4 sources, up to 350 words each,** centred on the part that
+  matched. Five sources used ~1,600 tokens per call, which went over Groq's
+  per-minute limit when an answer had to be rewritten. Three saved tokens but
+  lost plain-language questions. Four is ~1,250 tokens and scores the same as
+  five on every category.
 - **Two kinds of checking.** Plain Python checks that every sentence has a
   citation and that the number exists. The LLM then checks whether the sentence
   is actually supported by the source it cites.
