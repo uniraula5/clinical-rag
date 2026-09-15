@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from evaluate import evaluate, first_hit_rank, hit_at_k, load_test_cases, print_hit_at_k_table, save_ranks, summarize
+from evaluate_answers import HOLDOUT_PATH, RESULTS_PATH, results_path_for, select_cases
 
 HAS_DATA = any((Path(__file__).parent.parent / "data" / "raw").glob("*.csv"))
 needs_data = pytest.mark.skipif(not HAS_DATA, reason="needs the MedQuAD data (python download_data.py)")
@@ -96,3 +97,26 @@ def test_hit_at_k_table_shows_every_method_and_category(capsys):
         assert label in printed
     # semantic: 1 of 2 questions found by rank 3; hybrid: both
     assert "    0.50" in printed and "    1.00" in printed
+
+
+def test_select_cases_takes_every_fourth_question():
+    cases = [{"id": str(i)} for i in range(12)]
+    assert [c["id"] for c in select_cases(cases, 0)] == ["0", "4", "8"]
+    assert [c["id"] for c in select_cases(cases, 2)] == ["2", "6", "10"]
+
+
+def test_tuning_and_holdout_sets_never_overlap():
+    cases = load_test_cases()
+    tuning = {c["id"] for c in select_cases(cases, 0)}
+    holdout = {c["id"] for c in select_cases(cases, 2)}
+    assert len(tuning) == len(holdout) == 12
+    assert not tuning & holdout
+    # both samples should still cover all three kinds of question
+    for sample in (select_cases(cases, 0), select_cases(cases, 2)):
+        assert len({c["category"] for c in sample}) == 3
+
+
+def test_results_go_to_separate_files():
+    assert results_path_for(0) == RESULTS_PATH
+    assert results_path_for(2) == HOLDOUT_PATH
+    assert results_path_for(0) != results_path_for(2)

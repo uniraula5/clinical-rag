@@ -1,5 +1,5 @@
 """
-Checks the full pipeline's answers (not just retrieval) on 8 of the 32 test
+Checks the full pipeline's answers (not just retrieval) on a quarter of the test
 questions: did the right source get retrieved, did the first draft pass the
 fact check, how often a revision was needed, and did the final answer pass.
 
@@ -10,6 +10,7 @@ self-consistency with the sources, not medical correctness.
     python evaluate_answers.py
 """
 
+import argparse
 import json
 import time
 from pathlib import Path
@@ -18,6 +19,18 @@ from evaluate import load_test_cases
 from pipeline import QAPipeline
 
 RESULTS_PATH = Path(__file__).parent / "eval" / "answer_results.json"
+HOLDOUT_PATH = Path(__file__).parent / "eval" / "answer_results_holdout.json"
+STEP = 4  # take every 4th question, so the sample covers all three categories
+
+
+def select_cases(cases, offset):
+    """Every 4th question starting at `offset`. Offset 0 is the set used while
+    writing the prompts; any other offset gives questions those never saw."""
+    return cases[offset::STEP]
+
+
+def results_path_for(offset):
+    return RESULTS_PATH if offset == 0 else HOLDOUT_PATH
 
 
 def supported_share(step):
@@ -33,7 +46,15 @@ def average(values):
 
 
 if __name__ == "__main__":
-    cases = load_test_cases()[::4]  # every 4th question: 8 of 32, from both categories
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--offset", type=int, default=0,
+                        help="0 = the questions used while writing the prompts, "
+                             "2 = a held-out set the prompts never saw")
+    args = parser.parse_args()
+
+    cases = select_cases(load_test_cases(), args.offset)
+    results_path = results_path_for(args.offset)
+    print(f"{len(cases)} questions (offset {args.offset}): {', '.join(c['id'] for c in cases)}\n")
     pipeline = QAPipeline()
 
     records = []
@@ -70,5 +91,5 @@ if __name__ == "__main__":
     print(f"Supported sentences, first draft:   {average(r['draft_supported_share'] for r in records):.0%}")
     print(f"Supported sentences, final answer:  {average(r['final_supported_share'] for r in records):.0%}")
 
-    RESULTS_PATH.write_text(json.dumps(records, indent=2) + "\n")
-    print(f"\nSaved details to {RESULTS_PATH}")
+    results_path.write_text(json.dumps(records, indent=2) + "\n")
+    print(f"\nSaved details to {results_path}")

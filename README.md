@@ -18,7 +18,7 @@ is medical advice.
   method ranked the correct answer for every question).
 - **The whole answer flow** is `pipeline.py`, about 120 lines: search, write,
   fact-check, rewrite once.
-- **`python -m pytest`** runs 63 tests in about 2 seconds with no API key, no
+- **`python -m pytest`** runs 66 tests in about 2 seconds with no API key, no
   index and no LLM calls.
 
 ## What it looks like
@@ -164,6 +164,7 @@ python search.py "symptoms of leukemia"                 # semantic search only
 python keyword_search.py "Is MELAS inherited?"          # keyword search only
 python evaluate.py                                      # how good is the search
 python evaluate_answers.py                              # how good are the answers (uses the LLM)
+python evaluate_answers.py --offset 2                   # the same check on held-out questions
 
 # both searches combined
 python hybrid_search.py "What condition is linked to mutations in the PAH gene?"
@@ -278,9 +279,33 @@ Two honest notes about that 12 of 12:
   "The sources I found don't answer this question." It passes because it claims
   nothing. That is the behaviour I want, but it isn't an answer.
 - **The rules were written after reading the failures from these same 12
-  questions,** which is a mild form of fitting the test. The rules target a general
-  habit rather than these questions, and no question or label was changed, but a
-  clean check would need questions I haven't seen.
+  questions,** which is a mild form of fitting the test. So I checked them on
+  questions they had never seen, below.
+
+#### Checking the rules on questions they never saw
+
+The eval takes every 4th question. Shifting the starting point gives a second
+sample of 12 from the same 48, with no overlap and 4 from each category:
+
+```bash
+python evaluate_answers.py --offset 2
+```
+
+| | tuning set | held-out set |
+|---|---|---|
+| A correct source was among those used | 11 / 12 | 11 / 12 |
+| First draft passed the fact check | 7 / 12 | 10 / 12 |
+| Final answer passed the fact check | 12 / 12 | 12 / 12 |
+| Sentences supported by their source | 82% → 100% | 92% → 100% |
+
+The held-out questions did slightly better, and none of those answers was a
+refusal, so the rules are doing general work rather than fitting the questions I
+looked at. Results are saved separately in `eval/answer_results_holdout.json` so a
+held-out run can't overwrite the other one.
+
+One held-out question (lupus) counts as a retrieval miss because the answer I
+marked correct wasn't retrieved, but the answer it did write is properly grounded
+in other lupus pages. Strict labels undercount cases like that.
 
 Answers didn't get shorter to please the checker: they run 43 to 111 words, still
 3 to 6 sentences. What changed is one fact per sentence, with one citation.
@@ -294,7 +319,7 @@ output twice. Per-question details are in `eval/answer_results.json`.
 python -m pytest
 ```
 
-63 tests, about 2 seconds. They don't need an API key, the index, or any LLM
+66 tests, about 2 seconds. They don't need an API key, the index, or any LLM
 calls, because fake versions of the LLM and database are used. They check the
 cleaning rules, the chunk size limit and overlap, one result per answer, the
 search and ranking math, the citation and claim checks, the rewrite limit, the
@@ -334,6 +359,7 @@ answer cache, the eval scoring, and the setup checker.
 | `eval/test_cases.json` | The 48 test questions and their correct answers |
 | `eval/retrieval_results.csv` | Where each method ranked the correct answer |
 | `eval/answer_results.json` | Details from the answer scoring run |
+| `eval/answer_results_holdout.json` | The same, for the held-out questions |
 | `tests/` | The test suite |
 
 ## Choices I made
