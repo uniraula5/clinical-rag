@@ -18,7 +18,7 @@ is medical advice.
   method ranked the correct answer for every question).
 - **The whole answer flow** is `pipeline.py`, about 150 lines: search, write,
   fact-check, rewrite once.
-- **`python -m pytest`** runs 74 tests in about 2 seconds with no API key, no
+- **`python -m pytest`** runs 79 tests in about 2 seconds with no API key, no
   index and no LLM calls. (Two of them check the eval questions against the real
   data, so they skip until you run `python download_data.py`.)
 
@@ -111,7 +111,7 @@ This pulls 12 CSV files (~25 MB) into `data/raw/`.
 python build_index.py
 ```
 
-This takes about 4 minutes and writes a `chroma_db/` folder of roughly 300 MB.
+This takes 4 to 6 minutes and writes a `chroma_db/` folder of roughly 300 MB.
 It reads every answer, splits it into chunks, and turns each chunk into a vector.
 It only has to be done once.
 
@@ -126,7 +126,7 @@ Checking setup...
 
   [OK  ] API key (.env): key found
   [OK  ] MedQuAD data: 12 CSV files
-  [OK  ] Search index: 48,978 chunks
+  [OK  ] Search index: 49,030 chunks
 
 Everything is ready. Start the demo with:  python app.py
 ```
@@ -162,11 +162,19 @@ good the match is. Compare results within a method, not across them.
 Try `What condition is linked to mutations in the PAH gene?` in the Search tab
 and switch between the three methods:
 
-| Method | Top result |
-|---|---|
-| Semantic | Lesch-Nyhan syndrome (wrong) |
-| Keyword | Pulmonary arterial hypertension (also abbreviated PAH, wrong) |
-| Hybrid | Phenylketonuria (correct) |
+| Method | Top result | Where the correct answer lands |
+|---|---|---|
+| Semantic | Lesch-Nyhan syndrome (wrong) | not in the top 5 at all |
+| Keyword | Pulmonary arterial hypertension (wrong) | 2nd |
+| Hybrid | Pulmonary arterial hypertension (wrong) | 2nd |
+
+`PAH` is a real collision: it is both the phenylketonuria gene and the usual
+abbreviation for pulmonary arterial hypertension, and the lung-disease page says
+"PAH" many times. So the top hit is defensible even though it is not what I meant.
+What matters for this project is the second column: semantic search does not return
+phenylketonuria anywhere in the top 5, and both methods that read exact words put it
+2nd. The Ask tab sends 4 sources, so the correct one gets through and the answer is
+right.
 
 You can also run things from the command line:
 
@@ -188,7 +196,7 @@ Answering a question:
 
 ```
 question
-  -> hybrid search (hybrid_search.py)        top 4 of 15,795 answers
+  -> hybrid search (hybrid_search.py)        top 4 of 15,810 answers
   -> write an answer (answer.py)             the LLM may only use those 4 sources
   -> fact-check it (verify.py)               is every sentence really in its source?
   -> if not, rewrite once (pipeline.py)      the checker's complaints go back to the writer
@@ -199,9 +207,9 @@ Building the index, which happens once before any of that:
 
 ```
 data/raw/*.csv        12 MedQuAD files                 47,457 rows
-  -> clean_data.py    drop empty and duplicate answers 15,795 questions
-  -> chunking.py      split into pieces of <=100 words 48,978 chunks
-  -> build_index.py   turn each chunk into a vector    48,978 vectors
+  -> clean_data.py    drop empty and duplicate answers 15,810 questions
+  -> chunking.py      split into pieces of <=100 words 49,030 chunks
+  -> build_index.py   turn each chunk into a vector    49,030 vectors
 ```
 
 ## Results
@@ -222,7 +230,7 @@ The eval has 48 questions with the correct answers marked, in three groups of 16
 |---|---|---|---|---|
 | Semantic | 0.83 / 0.67 | **0.81 / 0.60** | **1.00 / 0.90** | 0.69 / 0.52 |
 | Keyword (BM25) | 0.85 / 0.68 | 0.69 / 0.49 | 0.88 / 0.66 | **1.00 / 0.89** |
-| **Hybrid (RRF)** | **0.94 / 0.75** | 0.81 / 0.51 | 1.00 / 0.88 | 1.00 / 0.86 |
+| **Hybrid (RRF)** | **0.94 / 0.74** | 0.81 / 0.51 | 1.00 / 0.88 | 1.00 / 0.83 |
 
 hit@5 means a correct answer was in the top 5. MRR is higher when the correct
 answer is nearer the top.
@@ -267,9 +275,10 @@ the pipeline sends **4 sources**.
 A fourth slot does not rescue everything. Hybrid search loses three questions
 outright, and one of them, "Can you catch hepatitis C from sharing needles?",
 is a question semantic search had at rank 1. No number of slots brings back an
-answer the merged ranking never returned. That is the same question the answer
-eval below reports as a refusal, and it is the clearest cost of using hybrid
-search: it wins on 45 of 48 questions and pays for it on this one.
+answer the merged ranking never returned. That is the clearest cost of using hybrid
+search: it wins on 45 of 48 questions and pays for it on this one. The answer eval
+below still counts that question as its one retrieval miss, even though the pipeline
+now writes a decent answer from the other hepatitis C pages it found.
 
 Per-question ranks for all three methods are in `eval/retrieval_results.csv`.
 
@@ -278,36 +287,62 @@ Per-question ranks for all three methods are in `eval/retrieval_results.csv`.
 This runs the whole pipeline on 12 of the 48 questions (every 4th one), so it
 scores the answers and not just the search.
 
-| | 3 sources | 4 sources | 4 + stricter rules (now) |
-|---|---|---|---|
-| A correct source was among those used | 9 / 12 | 11 / 12 | **11 / 12** |
-| First draft passed the fact check | 8 / 12 | 6 / 12 | 7 / 12 |
-| Needed one rewrite | 4 / 12 | 6 / 12 | 5 / 12 |
-| Final answer passed the fact check | 9 / 12 | 9 / 12 | **12 / 12** |
-| Sentences supported by their source | 81% → 91% | 77% → 92% | 82% → **100%** \* |
+| | 3 sources | 4 sources | 4 + stricter rules | same, re-run after the cleaning fix (now) |
+|---|---|---|---|---|
+| A correct source was among those used | 9 / 12 | 11 / 12 | 11 / 12 | **11 / 12** |
+| First draft passed the fact check | 8 / 12 | 6 / 12 | 7 / 12 | 6 / 12 |
+| Needed one rewrite | 4 / 12 | 6 / 12 | 5 / 12 | 6 / 12 |
+| Final answer passed the fact check | 9 / 12 | 9 / 12 | 12 / 12 | **11 / 12** |
+| Sentences supported by their source | 81% → 91% | 77% → 92% | 82% → 100% \* | 82% → **98%** |
 
-\* The two percentages do not cover the same answers. Every draft made claims, so
-the first number is over all 12. The final answer for the hepatitis C question is a
-refusal, which has no sentences to score, so the second is over the 11 that made a
-claim. `python evaluate_answers.py` now prints the count next to each percentage
-instead of leaving that to be discovered.
+\* In that column the two percentages do not cover the same answers. Every draft
+made claims, so the first is over all 12; the final answer for the hepatitis C
+question was a refusal, which has no sentences to score, so the second is over the
+11 that made a claim. In the newest run nothing refused, so both are over 12.
+`python evaluate_answers.py` now prints the count next to each percentage instead of
+leaving that to be found.
 
 The failures were never random. Once search improved, what was left was the writer
 adding detail the sources don't have, in two shapes: gluing a fact from one source
 to a fact from another in one sentence and citing both, and explaining a mechanism
 the source never explains. So the writer now has two extra rules: one fact per
 sentence from a single source, and no explaining how something works unless the
-source explains it. That took the final answers from 9 of 12 to 12 of 12.
+source explains it. That took the final answers from 9 of 12 to 12 of 12 on the run
+where the rules were added, and 11 of 12 on the newest run.
 
-Two honest notes about that 12 of 12:
+### What the last column says, and what it costs to be honest about it
 
-- **One of them is a refusal.** For "Can you catch hepatitis C from sharing
-  needles?" search still finds no source that mentions needles, so the answer is
-  "The sources I found don't answer this question." It passes because it claims
-  nothing. That is the behaviour I want, but it isn't an answer.
-- **The rules were written after reading the failures from these same 12
-  questions,** which is a mild form of fitting the test. So I checked them on
-  questions they had never seen, below.
+That last column is the same 12 questions run again after the cleaning fix, and it
+came out **worse**: 11 of 12 instead of 12 of 12. I am reporting the run I got
+rather than re-rolling until the old number comes back, so here is what actually
+moved.
+
+- **The one failure is real.** For the TSC1 gene question the writer produced
+  "Tuberous sclerosis complex has an autosomal dominant pattern, and one altered
+  copy of the TSC1 gene increases the risk of tumors and other developmental
+  problems [2]." The checker rejected it, the rewrite kept it, and the pipeline
+  only allows one rewrite, so it is shown with a warning. That is the design
+  working as intended, not a crash.
+- **Nothing refused this time.** The hepatitis C question used to answer "The
+  sources I found don't answer this question." It now writes a real answer from the
+  hepatitis C pages it did retrieve ("can be spread through contact with the blood
+  of a person infected..."), and that answer passes the fact check. The answer I had
+  labelled correct is *still* not retrieved, so it is still counted as the one
+  retrieval miss — the pipeline worked around a miss rather than hiding it.
+- **Most of the movement is the model, not the code.** Four questions changed
+  between the two runs and three of them only changed whether the *first draft*
+  passed before being rewritten. Retrieval for all but one of the 48 eval questions
+  is byte-identical across the two indexes, so the TSC1 failure is the model writing
+  a different sentence, not the search finding different sources.
+
+The useful number here is the spread: **the same 12 questions scored 12/12 and then
+11/12 on two runs.** That is what "the numbers move a little between runs" means in
+practice, and it is why I would not claim a one-question difference as an
+improvement anywhere in this README.
+
+**The rules were also written after reading the failures from these same 12
+questions,** which is a mild form of fitting the test. So I checked them on
+questions they had never seen, below.
 
 #### Checking the rules on questions they never saw
 
@@ -325,6 +360,11 @@ python evaluate_answers.py --offset 2
 | Final answer passed the fact check | 12 / 12 | 12 / 12 |
 | Sentences supported by their source | 82% of 12 → 100% of 11 | 92% of 12 → 100% of 12 |
 
+Both columns are from before the cleaning fix, so they are a fair comparison with
+each other. I did not repeat the held-out run afterwards, because the fix changed
+the rank of exactly one question in the whole 48-question eval and that question is
+in the tuning set — retrieval for all 12 held-out questions is unchanged.
+
 The held-out questions did slightly better, and none of those answers was a
 refusal, so the rules are doing general work rather than fitting the questions I
 looked at. Results are saved separately in `eval/answer_results_holdout.json` so a
@@ -334,10 +374,9 @@ One held-out question (lupus) counts as a retrieval miss because the answer I
 marked correct wasn't retrieved, but the answer it did write is properly grounded
 in other lupus pages. Strict labels undercount cases like that.
 
-Answers didn't get shorter to please the checker. On the tuning set they run 43 to
-111 words and on the held-out set 32 to 130, 3 to 5 sentences either way, inside the
-3-to-6 rule the writer is given. What changed is one fact per sentence, with one
-citation.
+Answers didn't get shorter to please the checker. The newest tuning run is 43 to 100
+words and the held-out run 32 to 130, 3 to 5 sentences either way, inside the 3-to-6
+rule the writer is given. What changed is one fact per sentence, with one citation.
 
 The numbers move a little between runs, because the LLM doesn't produce identical
 output twice. Per-question details are in `eval/answer_results.json`.
@@ -348,10 +387,10 @@ output twice. Per-question details are in `eval/answer_results.json`.
 python -m pytest
 ```
 
-74 tests, about 2 seconds. They don't need an API key, the index, or any LLM
+79 tests, about 2 seconds. They don't need an API key, the index, or any LLM
 calls, because fake versions of the LLM and database are used. Two of them read the
 real MedQuAD files to check the eval questions, so those two skip until you run
-`python download_data.py`; the other 72 run on a fresh clone.
+`python download_data.py`; the other 77 run on a fresh clone.
 
 They check the cleaning rules, the chunk size limit and overlap, one result per
 answer, the search and ranking math, where a sentence ends, the citation and claim
@@ -403,9 +442,16 @@ exactly the test that covers it fail, five for five.
 
 ## Choices I made
 
-- **15,795 of 47,457 rows are usable.** MedQuAD had to remove the answers from
+- **15,810 of 47,457 rows are usable.** MedQuAD had to remove the answers from
   its three MedlinePlus sources for copyright reasons, so those rows are
   questions with nothing attached.
+- **"The answer is just the question" needs care.** Some GARD rows repeat the
+  question where the answer should be. My first rule threw out any answer ending in
+  `?`, which also deleted 15 real answers — including what causes atherosclerosis and
+  the symptoms of adrenal insufficiency — because they happen to finish on a question
+  like "Do you know how your cholesterol compares?". The rule now drops an answer
+  only if the whole thing is a single question. Everything it still drops is 8 words
+  or fewer; everything it now keeps is 27 words or more.
 - **Chunks are 100 words.** The embedding model stops reading after 256 tokens
   and says nothing about it. At 150 words per chunk, 3.7% of chunks were being
   cut off. At 100 words, 99.8% fit.
@@ -423,7 +469,8 @@ exactly the test that covers it fail, five for five.
   style (`【4†L1-L4】`), which made every sentence fail the citation check.
 - **One fact per sentence, from one source.** The writer used to merge two sources
   into a sentence and cite both, and explain mechanisms the sources never state.
-  Two rules against that took the answer score from 9 of 12 to 12 of 12.
+  Two rules against that took the answer score from 9 of 12 to 12 of 12, and it has
+  since measured 11 of 12 on a fresh run.
 - **Only one rewrite.** If the second version still fails, it is shown with a
   warning rather than hidden.
 - **The same question is answered from memory** the second time, so clicking an
@@ -435,8 +482,9 @@ exactly the test that covers it fail, five for five.
   answer sticks to its sources, not whether it is medically right, and the
   checker can be wrong in both directions.
 - **The test sets are small** (48 search questions, 12 answer questions), so one
-  question moves a group's score by about 6 points. LLM results also move a little
-  between runs. The gene questions were labelled by a rule rather than by hand,
+  question moves a group's score by about 6 points. LLM results also move between
+  runs: the same 12 answer questions scored 12/12 and then 11/12 on two runs, so
+  treat any one-question difference in this README as noise, including mine. The gene questions were labelled by a rule rather than by hand,
   which is stated where they're described; the other two groups were labelled by
   matching the condition name and question type.
 - **Groq's free tier is limited:** 8,000 tokens a minute and 200,000 a day, which

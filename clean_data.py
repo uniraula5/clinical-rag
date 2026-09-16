@@ -24,6 +24,20 @@ def clean_question(text):
     return re.sub(r"[\s?]*\?$", "?", text)
 
 
+def is_only_a_question(answer):
+    """True when the whole answer is one question and nothing else.
+
+    Some GARD rows have the question repeated where the answer should be
+    ("Is Williams syndrome inherited?"). Checking only for a "?" at the end
+    threw away real answers too, because a long answer can finish on a
+    question ("Do you know how your cholesterol compares?"). So an answer
+    counts as junk only if it is a single sentence ending in "?".
+    """
+    if not answer.endswith("?"):
+        return False
+    return len(re.split(r"(?<=[.!?])\s+", answer)) == 1
+
+
 def keep_rows(data, mask, reason, verbose):
     if verbose:
         print(f"  {reason}: removed {(~mask).sum()}")
@@ -41,9 +55,8 @@ def clean_medquad(verbose=True):
     data["answer"] = data["answer"].apply(clean_text)
     data["question"] = data["question"].astype(str).apply(clean_question)
 
-    # some GARD rows have the question repeated as the "answer"
-    ends_with_question = data["answer"].str.endswith("?")
-    data = keep_rows(data, ~ends_with_question, "answer is just a question", verbose)
+    only_a_question = data["answer"].apply(is_only_a_question)
+    data = keep_rows(data, ~only_a_question, "answer is just a question", verbose)
 
     same_pair = data.duplicated(["question", "answer"])
     data = keep_rows(data, ~same_pair, "duplicate question + answer", verbose)

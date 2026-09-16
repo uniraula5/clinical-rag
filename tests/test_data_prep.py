@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 import clean_data
-from clean_data import clean_question, clean_text
+from clean_data import clean_question, clean_text, is_only_a_question
 from load_data import load_medquad, source_from_filename
 
 
@@ -63,6 +63,20 @@ def test_clean_text_keeps_paragraphs_and_squashes_spaces():
 ])
 def test_clean_question(raw, expected):
     assert clean_question(raw) == expected
+
+
+@pytest.mark.parametrize("answer, is_junk", [
+    # the question copied where the answer should be - nothing to learn from it
+    ("Is Williams syndrome inherited?", True),
+    ("How might Bell's palsy be treated?", True),
+    # a real answer that happens to finish on a question. Checking only for a
+    # "?" at the end used to throw these away.
+    ("A desirable level is under 200 mg/dL. Do you know how yours compares?", False),
+    ("What causes it? It can arise from errors in cell division.", False),
+    ("Atherosclerosis is a slow, complex disease.", False),
+])
+def test_is_only_a_question(answer, is_junk):
+    assert is_only_a_question(answer) is is_junk
 
 
 def test_clean_medquad_applies_every_rule(monkeypatch):

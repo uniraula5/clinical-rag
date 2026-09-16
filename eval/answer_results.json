@@ -6,12 +6,13 @@
     "draft_passed": false,
     "revised": true,
     "final_passed": true,
-    "draft_supported_share": 0.75,
+    "draft_supported_share": 0.6,
     "final_supported_share": 1.0,
-    "seconds": 8.5,
-    "final_answer": "If a stone will not pass on its own, doctors can use shock waves to break it into smaller pieces [1]. Doctors may insert a scope through the urethra to reach the stone [1]. For larger stones or those that block urine flow, surgery such as percutaneous nephrolithotomy can be performed to take the stone out [3]. The specific treatment chosen depends on the stone\u2019s size, what it is made of, and whether it is causing symptoms or blockage [4].",
+    "seconds": 6.9,
+    "final_answer": "If a stone will not pass on its own, doctors can use shock waves to break it into smaller pieces [1]. They may also insert a scope through the urethra to reach the stone [1]. In some situations, surgery is performed to take the stone out [1]. Hospital treatments may include shock wave lithotripsy (SWL) [3]. Larger or obstructing stones can be removed with a ureteroscope or by percutaneous nephrolithotomy [3].",
     "draft_problems": [
-      "Not supported by its source: \"They may also insert a scope through the urethra to reach the stone and either remove it or break it up [1].\" (Source [1] mentions scope insertion but does not specify removal or breaking of the stone.)"
+      "Not supported by its source: \"They may also insert a scope through the urethra to reach the stone and remove or fragment it [1].\" (Source [1] mentions scope insertion but does not specify removal or fragmentation)",
+      "Not supported by its source: \"Shock wave lithotripsy uses sound waves to break the stone into fragments that can pass more easily [3].\" (Source [3] mentions shock wave lithotripsy but does not describe it uses sound waves)"
     ],
     "final_problems": []
   },
@@ -24,10 +25,10 @@
     "final_passed": true,
     "draft_supported_share": 0.75,
     "final_supported_share": 1.0,
-    "seconds": 64.0,
-    "final_answer": "Wheezing, coughing, and chest tightness are common symptoms of acute bronchitis, which often follows a cold or flu and may last for weeks [1]. Chronic bronchitis includes coughing, wheezing, and chest discomfort [1]. Chronic bronchitis is a long\u2011term condition that keeps coming back or never goes away completely [2]. Chronic bronchitis is frequently caused by long\u2011term exposure to cigarette smoke or other air pollutants [2]. Asthma can cause coughing, wheezing, chest tightness, and shortness of breath, and these symptoms may vary over time [3].",
+    "seconds": 66.0,
+    "final_answer": "Persistent wheezing, coughing, and chest tightness can be symptoms of acute bronchitis, which often follows a cold or flu and may last for weeks [1]. Chronic bronchitis also includes coughing, wheezing, and chest discomfort as common signs [1]. Asthma commonly causes coughing, wheezing, and a feeling of chest tightness [3].",
     "draft_problems": [
-      "Not supported by its source: \"Chronic bronchitis also presents with coughing, wheezing, and chest discomfort, and it is a long\u2011term condition that keeps recurring or never fully resolves [1].\" (Source 1 does not mention chronic bronchitis being long\u2011term or recurrent)"
+      "Not supported by its source: \"Chronic bronchitis also presents with coughing, wheezing, and chest discomfort, and it is a long\u2011term condition that keeps recurring or never fully resolves [1].\" (Source 1 describes symptoms but does not state chronic bronchitis is a long\u2011term recurring condition)"
     ],
     "final_problems": []
   },
@@ -35,14 +36,16 @@
     "id": "p09",
     "query": "What tests do doctors use to check for Alzheimer's?",
     "correct_source_retrieved": true,
-    "draft_passed": true,
-    "revised": false,
+    "draft_passed": false,
+    "revised": true,
     "final_passed": true,
-    "draft_supported_share": 1.0,
+    "draft_supported_share": 0.8,
     "final_supported_share": 1.0,
-    "seconds": 30.9,
-    "final_answer": "Doctors may ask about overall health, past medical problems, ability to carry out daily activities, and changes in behavior and personality [1]. They conduct tests that measure memory, problem\u2011solving, attention, counting, and language skills [1]. Standard medical tests such as blood and urine tests are also performed to help rule out other possible causes [1]. Brain scans are used to look for anything in the brain that does not look normal [1].",
-    "draft_problems": [],
+    "seconds": 63.5,
+    "final_answer": "Doctors may ask about overall health, past medical problems, ability to carry out daily activities, and changes in behavior and personality [1]. They conduct tests to measure memory, problem solving, attention, counting, and language skills [1]. They carry out standard medical tests, such as blood and urine tests [1]. They perform brain scans to look for anything in the brain that does not look normal [1]. The only definitive way to diagnose Alzheimer\u2019s disease is to find plaques and tangles in brain tissue, which is done by brain autopsy after death [1].",
+    "draft_problems": [
+      "Not supported by its source: \"Standard medical tests such as blood and urine tests are also performed to check for other possible causes [1].\" (Adds purpose (checking other causes) not stated in source [1])"
+    ],
     "final_problems": []
   },
   {
@@ -52,14 +55,13 @@
     "draft_passed": false,
     "revised": true,
     "final_passed": true,
-    "draft_supported_share": 0.0,
-    "final_supported_share": null,
-    "seconds": 45.5,
-    "final_answer": "The sources I found don't answer this question.",
+    "draft_supported_share": 0.3333333333333333,
+    "final_supported_share": 1.0,
+    "seconds": 63.1,
+    "final_answer": "Hepatitis C can be spread through contact with the blood of a person infected with the hepatitis C virus. [2] You could get hepatitis C through contact with an infected person\u2019s blood. [1] There is no vaccine to prevent infection with hepatitis C. [2]",
     "draft_problems": [
-      "Not supported by its source: \"Yes, hepatitis C can be caught by sharing needles because the virus spreads through contact with an infected person\u2019s blood[1].\" (Source 1 mentions transmission via infected blood but does not explicitly state sharing needles as a route.)",
-      "Not supported by its source: \"The infection is caused by contact with the blood of a person who has hepatitis\u202fC, which includes sharing needles that have been used by someone with the virus[2].\" (Source 2 states transmission via infected blood but does not mention sharing needles.)",
-      "Not supported by its source: \"Sharing needles is therefore a recognized way that hepatitis\u202fC can be transmitted[3].\" (Source 3 describes spread through infected blood but does not specifically cite sharing needles as a recognized method.)"
+      "Not supported by its source: \"Sharing needles creates that kind of blood\u2011to\u2011blood contact, so it can transmit hepatitis\u202fC\u202f[2].\" (Source [2] mentions blood contact transmission but does not specifically mention sharing needles.)",
+      "Not supported by its source: \"Therefore, using a needle that has been used by an infected person can result in catching hepatitis\u202fC\u202f[3].\" (Source [3] describes spread via infected blood but does not specifically state that using a needle previously used by an infected person can transmit hepatitis C.)"
     ],
     "final_problems": []
   },
@@ -67,14 +69,16 @@
     "id": "e01",
     "query": "Is Prader-Willi syndrome inherited?",
     "correct_source_retrieved": true,
-    "draft_passed": true,
-    "revised": false,
+    "draft_passed": false,
+    "revised": true,
     "final_passed": true,
-    "draft_supported_share": 1.0,
+    "draft_supported_share": 0.6666666666666666,
     "final_supported_share": 1.0,
-    "seconds": 22.9,
-    "final_answer": "Most cases of Prader\u2011Willi syndrome are not inherited, especially when caused by a deletion of the paternal chromosome\u202f15 or by maternal uniparental disomy. [1] These genetic changes occur as random events during the formation of reproductive cells or early embryonic development, so affected individuals usually have no family history of the disorder. [1] In rare instances a genetic change that inactivates genes on the paternal chromosome\u202f15 can be passed from one generation to the next, making the condition inherited. [1] The risk to other family members depends on the specific genetic cause of the person\u2019s Prader\u2011Willi syndrome. [2]",
-    "draft_problems": [],
+    "seconds": 53.8,
+    "final_answer": "Most cases of Prader\u2011Willi syndrome are not inherited, especially when caused by a deletion in the paternal chromosome\u202f15 or by maternal uniparental disomy[1]. These genetic changes occur as random events during the formation of reproductive cells or early embryonic development, so affected people usually have no family history of the disorder[1]. Rarely, a genetic change that inactivates genes on the paternal chromosome\u202f15 can be passed from one generation to the next[1]. The risk to family members depends on the specific genetic cause of the condition[2].",
+    "draft_problems": [
+      "Not supported by its source: \"In rare situations a genetic change that inactivates genes on the paternal chromosome\u202f15 can be passed from one generation to the next, meaning the syndrome can be inherited[1][2].\" (Source 1 includes the detail about inactivating paternal genes being inherited, but Source 2 does not mention that specific detail, so the claim is not fully supported by all cited sources.)"
+    ],
     "final_problems": []
   },
   {
@@ -86,8 +90,8 @@
     "final_passed": true,
     "draft_supported_share": 1.0,
     "final_supported_share": 1.0,
-    "seconds": 27.3,
-    "final_answer": "Huntington disease is inherited in an autosomal dominant pattern, meaning one copy of the altered gene is enough to cause the disorder.\u202f[1] An affected person usually inherits the altered gene from an affected parent, although rare cases occur where a parent does not have the disorder.\u202f[1] When a person with Huntington disease has children, each child has a 50% chance of inheriting the mutated gene and developing the condition.\u202f[2] In rare instances, a new (de novo) mutation can cause Huntington disease in a person who does not inherit it from a parent.\u202f[2]",
+    "seconds": 25.4,
+    "final_answer": "Huntington disease is inherited in an autosomal dominant pattern, meaning one altered copy of the HTT gene is enough to cause the disorder [1]. An affected person usually inherits the altered gene from an affected parent, and each child of a person with Huntington disease has a 50% chance of inheriting the mutated gene [2]. In rare cases the disease can arise from a new (de novo) mutation, so a person may have no affected parent [2]. As the gene is passed down, the CAG repeat often expands, leading to earlier onset in later generations, a phenomenon called anticipation [1].",
     "draft_problems": [],
     "final_problems": []
   },
@@ -100,8 +104,8 @@
     "final_passed": true,
     "draft_supported_share": 1.0,
     "final_supported_share": 1.0,
-    "seconds": 25.5,
-    "final_answer": "Crohn disease is linked to variations in several specific genes, including ATG16L1, IRGM, NOD2, and IL23R [1]. These gene variations affect proteins that are involved in immune system function and may disrupt the intestine\u2019s normal response to bacteria [1]. Genetic risk regions have also been identified on chromosomes\u202f5 and\u202f10, such as the IBD5 locus on chromosome\u202f5 and other \u201cgene desert\u201d areas that may regulate nearby genes [1]. The inheritance pattern is unclear because many genetic and environmental factors are likely involved, though the disease tends to cluster in families [2]. Researchers consider genes as one of the factors that may play a role in causing Crohn\u2019s disease [3].",
+    "seconds": 23.4,
+    "final_answer": "Crohn disease is linked to genetic variations on chromosomes\u202f5 and\u202f10, including the IBD5 locus on chromosome\u202f5 and other regions called \u201cgene deserts\u201d that may regulate nearby genes[1]. Specific gene variants that increase risk include ATG16L1, IRGM, NOD2, and IL23R, which provide instructions for proteins involved in immune system function[1]. These genetic changes may affect how intestinal cells respond to bacteria, potentially leading to chronic inflammation[1]. The inheritance pattern of Crohn disease is unclear because many genetic and environmental factors are likely involved, but the disease tends to cluster in families[2].",
     "draft_problems": [],
     "final_problems": []
   },
@@ -114,8 +118,8 @@
     "final_passed": true,
     "draft_supported_share": 1.0,
     "final_supported_share": 1.0,
-    "seconds": 30.0,
-    "final_answer": "MELAS is caused by mutations in mitochondrial DNA and is transmitted by maternal (mitochondrial) inheritance\u202f[1]. Only egg cells contribute mitochondria to the embryo, so only females can pass the mutation to their children\u202f[1]. The disorder can appear in every generation of a family and can affect both males and females\u202f[1]. Most people with MELAS inherit an altered mitochondrial gene from their mother, although it can also arise from a new mutation without a family history\u202f[1].",
+    "seconds": 27.2,
+    "final_answer": "MELAS is caused by mutations in mitochondrial DNA and is therefore transmitted by maternal (mitochondrial) inheritance. [1] Only egg cells, not sperm cells, provide mitochondria to the developing embryo, so only females can pass the mutation to their children. [1] Because of this pattern, MELAS can appear in every generation of a family and affect both males and females. [1] In most cases the altered mitochondrial gene is inherited from the mother, but less commonly the condition results from a new mutation with no family history. [1]",
     "draft_problems": [],
     "final_problems": []
   },
@@ -123,16 +127,14 @@
     "id": "g01",
     "query": "What condition is linked to mutations in the DMD gene?",
     "correct_source_retrieved": true,
-    "draft_passed": false,
-    "revised": true,
+    "draft_passed": true,
+    "revised": false,
     "final_passed": true,
-    "draft_supported_share": 0.6666666666666666,
+    "draft_supported_share": 1.0,
     "final_supported_share": 1.0,
-    "seconds": 52.0,
-    "final_answer": "Mutations in the DMD gene cause Duchenne muscular dystrophy, a rapidly progressive form of muscular dystrophy that primarily affects boys [1]. Mutations in the DMD gene also cause Becker muscular dystrophy, another form of muscular dystrophy [4]. Both Duchenne and Becker muscular dystrophies are classified as dystrophinopathies because they result from faulty or missing dystrophin [4].",
-    "draft_problems": [
-      "Not supported by its source: \"The same DMD gene mutations also cause Becker muscular dystrophy, a milder form of the disease [4].\" (Source [4] confirms DMD mutations cause Becker, but does not explicitly describe Becker as a \"milder form of the disease\".)"
-    ],
+    "seconds": 24.9,
+    "final_answer": "Mutations in the DMD gene cause Duchenne muscular dystrophy, a rapidly progressive form of muscular dystrophy that mainly affects boys [1]. Duchenne muscular dystrophy leads to progressive loss of muscle function and weakness, beginning in the lower limbs and can also affect the heart [1]. The same DMD gene mutations also cause Becker muscular dystrophy, a milder form where some functional dystrophin is produced [4]. Both conditions are classified as dystrophinopathies because they result from faulty or missing dystrophin [4].",
+    "draft_problems": [],
     "final_problems": []
   },
   {
@@ -144,8 +146,8 @@
     "final_passed": true,
     "draft_supported_share": 1.0,
     "final_supported_share": 1.0,
-    "seconds": 28.2,
-    "final_answer": "Mutations in the PAH gene cause phenylketonuria.\u202f[1] The PAH gene provides instructions for making the enzyme phenylalanine hydroxylase.\u202f[1] When PAH gene mutations reduce the activity of phenylalanine hydroxylase, phenylalanine from the diet is not processed effectively and can build up to toxic levels in the blood and other tissues.\u202f[1] Classic PKU, the most severe form of the disorder, occurs when phenylalanine hydroxylase activity is severely reduced or absent.\u202f[1] Mutations in the PAH gene that allow the enzyme to retain some activity result in milder versions of this condition, such as variant PKU or non\u2011PKU hyperphenylalaninemia.\u202f[1]",
+    "seconds": 29.0,
+    "final_answer": "Mutations in the PAH gene cause phenylketonuria.\u202f[2] The PAH gene provides instructions for making the enzyme phenylalanine hydroxylase.\u202f[2] When these gene mutations reduce the activity of phenylalanine hydroxylase, phenylalanine can build up to toxic levels and may damage the brain.\u202f[2]",
     "draft_problems": [],
     "final_problems": []
   },
@@ -155,15 +157,17 @@
     "correct_source_retrieved": true,
     "draft_passed": false,
     "revised": true,
-    "final_passed": true,
-    "draft_supported_share": 0.6666666666666666,
-    "final_supported_share": 1.0,
-    "seconds": 53.3,
-    "final_answer": "Mutations in the TSC1 gene can cause tuberous sclerosis complex. [1] Mutations in the TSC1 gene can also cause lymphangioleiomyomatosis. [3] Renal oncocytomas can occur in people with tuberous sclerosis complex, which is caused by mutations in the TSC1 or TSC2 gene. [4]",
+    "final_passed": false,
+    "draft_supported_share": 0.75,
+    "final_supported_share": 0.75,
+    "seconds": 53.8,
+    "final_answer": "Mutations in the TSC1 gene can cause tuberous sclerosis complex.\u202f[1] Tuberous sclerosis complex has an autosomal dominant pattern, and one altered copy of the TSC1 gene increases the risk of tumors and other developmental problems.\u202f[2] Mutations in the TSC1 gene also cause lymphangioleiomyomatosis (LAM).\u202f[3] LAM involves tumors and cysts in the lungs that result from loss of functional hamartin.\u202f[3]",
     "draft_problems": [
-      "Not supported by its source: \"Tuberous sclerosis complex follows an autosomal dominant inheritance pattern, where one altered copy of TSC1 raises the risk of tumors and developmental issues. [2]\" (Source [2] mentions autosomal dominant inheritance for any altered TSC gene, not specifically TSC1; the sentence adds unsupported specificity.)"
+      "Not supported by its source: \"Tuberous sclerosis complex is caused when a person inherits or acquires a mutated copy of the TSC1 gene, which reduces the production of the tumor\u2011suppressor protein hamartin.\u202f[1]\" (Source says both TSC1 and TSC2 mutations cause the disease and does not claim TSC1 alone is sufficient; also wording about reduced hamartin production is not explicitly stated)"
     ],
-    "final_problems": []
+    "final_problems": [
+      "Not supported by its source: \"Tuberous sclerosis complex has an autosomal dominant pattern, and one altered copy of the TSC1 gene increases the risk of tumors and other developmental problems.\u202f[2]\" (Source mentions one altered copy of the gene generally, not specifically TSC1)"
+    ]
   },
   {
     "id": "g13",
@@ -174,8 +178,8 @@
     "final_passed": true,
     "draft_supported_share": 1.0,
     "final_supported_share": 1.0,
-    "seconds": 24.9,
-    "final_answer": "Mutations in the ABCD1 gene cause X\u2011linked adrenoleukodystrophy.\u202f[1] The disorder is inherited in an X\u2011linked pattern because the ABCD1 gene is located on the X chromosome.\u202f[3] In males, one altered copy of the ABCD1 gene is sufficient to cause the disease, while females usually develop milder or later\u2011onset symptoms.\u202f[3]",
+    "seconds": 22.4,
+    "final_answer": "Mutations in the ABCD1 gene cause X\u2011linked adrenoleukodystrophy. [1] The disorder is inherited in an X\u2011linked pattern, meaning the mutated gene is located on the X chromosome. [3] Males with one altered copy of the ABCD1 gene develop the disease, while females usually have milder or later\u2011onset features. [3] The disease involves accumulation of very long\u2011chain fatty acids that can damage the adrenal cortex and myelin. [1]",
     "draft_problems": [],
     "final_problems": []
   }

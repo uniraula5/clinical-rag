@@ -44,7 +44,7 @@ SOURCE_NAMES = {
 collection = get_collection()
 keyword_index = KeywordIndex()
 # pass the keyword index in, or QAPipeline builds a second copy of the same
-# 48,978-chunk BM25 index (about 2.5 seconds and a few hundred MB wasted)
+# 49,030-chunk BM25 index (about 2.5 seconds and a few hundred MB wasted)
 pipeline = QAPipeline(collection=collection, keyword_index=keyword_index)
 
 SEARCH_METHODS = {
@@ -171,7 +171,7 @@ def run_search(query, method, n_results):
 with gr.Blocks(title="Clinical Q&A Search") as demo:
     gr.Markdown(
         "# Clinical Q&A\n"
-        "Answers health questions using only 15,795 answers from NIH and CDC websites "
+        "Answers health questions using only 15,810 answers from NIH and CDC websites "
         "(the MedQuAD dataset). Every sentence cites its source, and a fact-checking step "
         "verifies each sentence against that source before the answer is shown.\n\n"
         "_Research demo only. Not medical advice._"

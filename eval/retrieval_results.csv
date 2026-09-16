@@ -35,7 +35,7 @@ g01,gene_symbol,What condition is linked to mutations in the DMD gene?,,4,4
 g02,gene_symbol,What condition is linked to mutations in the F9 gene?,,1,2
 g03,gene_symbol,What condition is linked to mutations in the HBB gene?,1,1,1
 g04,gene_symbol,What condition is linked to mutations in the FMR1 gene?,1,1,1
-g05,gene_symbol,What condition is linked to mutations in the PAH gene?,,2,1
+g05,gene_symbol,What condition is linked to mutations in the PAH gene?,,2,2
 g06,gene_symbol,What condition is linked to mutations in the NF1 gene?,1,1,1
 g07,gene_symbol,What condition is linked to mutations in the PKD1 gene?,2,1,1
 g08,gene_symbol,What condition is linked to mutations in the GBA gene?,3,1,1
