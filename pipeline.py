@@ -71,6 +71,16 @@ class QAPipeline:
         self.full_answers = dict(zip(data["doc_id"], data["answer"]))
         self.cache = {}
 
+    def full_answer_for(self, doc_id):
+        if doc_id not in self.full_answers:
+            # the index was built from a different version of the data, so a
+            # bare KeyError here would say nothing about how to fix it
+            raise RuntimeError(
+                f"The index has an answer ({doc_id}) that is not in the cleaned data. "
+                "Rebuild it with: python build_index.py"
+            )
+        return self.full_answers[doc_id]
+
     def get_sources(self, question):
         results = hybrid_search(question, n_results=N_SOURCES, collection=self.collection,
                                 keyword_index=self.keyword_index)
@@ -82,7 +92,7 @@ class QAPipeline:
                 "question": r["question"],
                 "score": r["score"],
                 "found_by": r.get("found_by", []),
-                "text": passage_for(self.full_answers[r["doc_id"]], r["text"]),
+                "text": passage_for(self.full_answer_for(r["doc_id"]), r["text"]),
             }
             for i, r in enumerate(results, start=1)
         ]

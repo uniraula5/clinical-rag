@@ -4,6 +4,7 @@ so no embedding model or database is needed."""
 import pandas as pd
 import pytest
 
+import search
 from hybrid_search import hybrid_search, reciprocal_rank_fusion
 from keyword_search import KeywordIndex, tokenize
 from search import semantic_search
@@ -101,3 +102,33 @@ def test_hybrid_search_renumbers_and_labels():
     assert [r["rank"] for r in results] == [1, 2, 3]
     assert results[0]["found_by"] == ["semantic", "keyword"]
     assert results[2]["found_by"] == ["keyword"]
+
+
+def test_hybrid_search_returns_no_more_than_asked_for():
+    # the pipeline relies on this: it asks for 4 sources and must not get 5
+    collection = FakeCollection([("A#0", 0.1, "A"), ("B#0", 0.2, "B")])
+    results = hybrid_search("q", n_results=2, collection=collection,
+                            keyword_index=FakeKeywordIndex(["C", "D", "E"]))
+    assert len(results) == 2
+    assert [r["rank"] for r in results] == [1, 2]
+
+
+def test_missing_index_says_which_command_to_run(monkeypatch):
+    class Client:
+        def __init__(self, path):
+            pass
+
+        def get_collection(self, name, embedding_function):
+            raise RuntimeError("Collection [medquad] does not exist")
+
+    monkeypatch.setattr(search, "chromadb", type("m", (), {"PersistentClient": Client}))
+    monkeypatch.setattr(search, "get_embedding_function", lambda: None)
+
+    with pytest.raises(RuntimeError, match="python build_index.py"):
+        search.get_collection(chroma_dir="nowhere")
+
+
+def test_print_results_does_not_add_dots_to_a_short_answer(capsys):
+    search.print_results("q", [{"rank": 1, "score": 0.5, "source": "S", "question": "q?",
+                                "text": "Question: q?\nAnswer: Short answer."}])
+    assert "Short answer.\n" in capsys.readouterr().out

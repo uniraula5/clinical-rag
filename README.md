@@ -16,10 +16,11 @@ is medical advice.
 - **The evidence:** `eval/test_cases.json` (48 questions and their correct
   answers), `evaluate.py` (scores them), `eval/retrieval_results.csv` (where each
   method ranked the correct answer for every question).
-- **The whole answer flow** is `pipeline.py`, about 120 lines: search, write,
+- **The whole answer flow** is `pipeline.py`, about 150 lines: search, write,
   fact-check, rewrite once.
-- **`python -m pytest`** runs 66 tests in about 2 seconds with no API key, no
-  index and no LLM calls.
+- **`python -m pytest`** runs 74 tests in about 2 seconds with no API key, no
+  index and no LLM calls. (Two of them check the eval questions against the real
+  data, so they skip until you run `python download_data.py`.)
 
 ## What it looks like
 
@@ -29,35 +30,39 @@ python pipeline.py "How is Wilson disease treated?"
 
 ```
 --- draft (1 problem(s)) ---
-Wilson disease has no cure, but therapies exist that aim to reduce or control the
-amount of copper that builds up in the body [1]. Affected individuals require
-lifelong treatment that may include certain medications [1]. Dietary modifications
-to lower copper intake are also part of the management plan [1]. If treatment is
-not effective or liver failure develops, a liver transplant may be necessary [1].
-  ! Not supported by its source: "Dietary modifications to lower copper intake are
-    also part of the management plan [1]." (Source 1 mentions dietary modifications
-    but does not specify they are to lower copper intake.)
+Wilson disease is treated with therapies that aim to reduce or control the amount
+of copper that builds up in the body [1][3]. Affected individuals usually need
+lifelong treatment that includes medications and changes to their diet to lower
+copper intake [1][4]. If medication and diet are not enough or if liver failure
+develops, a liver transplant may be required [1][4]. When the disease is identified
+early and treatment is followed, most people can lead normal lives and have a normal
+lifespan [2].
+  ! Not supported by its source: "If medication and diet are not enough or if liver
+    failure develops, a liver transplant may be required [1][4]." (Source 4 does not
+    specify transplant is required when meds/diet fail; condition not in cited source)
 
 --- revision (passed) ---
-Wilson disease has no cure, but therapies aim to reduce or control the amount of
-copper that accumulates in the body [1]. Affected individuals require lifelong
-treatment that may include medications and dietary modifications [1]. If treatment
-is not effective or liver failure develops, a liver transplant may be necessary [1].
-When the disorder is detected early and treated appropriately, a person can usually
-enjoy normal health and a normal lifespan [2]. Dietary changes may involve reducing
-copper intake by avoiding high-copper foods such as shellfish, liver, mushrooms,
-nuts, and chocolate [4].
+Therapies for Wilson disease aim to reduce or control the amount of copper that
+builds up in the body [1]. Affected individuals need lifelong treatment, which may
+include medications and dietary changes to lower copper intake [1]. If treatment is
+not effective or if liver failure develops, a liver transplant may be necessary [1].
+When the disorder is detected early and treated appropriately, most people can enjoy
+normal health and a normal lifespan [2].
 
 Sources:
-  [1] GARD  | What are the treatments for Wilson disease?
-  [2] NINDS | What is the outlook for Wilson Disease?
-  [3] GARD  | What is (are) Wilson disease?
-  [4] NIDDK | What to do for Wilson Disease?
+  [1] GARD | What are the treatments for Wilson disease? (GARD_0006449-5)
+  [2] NINDS | What is the outlook for Wilson Disease? (NINDS_0000276-3)
+  [3] GARD | What is (are) Wilson disease? (GARD_0006449-1)
+  [4] NIDDK | What to do for Wilson Disease? (NIDDK_0000133-13)
 ```
 
-The draft said dietary changes are "to lower copper intake". Source 1 never says
-that, so the checker rejected the sentence. The rewrite dropped the claim, and
-added the copper foods from source 4, which does say it.
+The draft leaned on two sources at once. It cited `[1][4]` for the transplant
+sentence, but source 4 is a diet page that never mentions transplants, so the
+checker rejected it. The rewrite says the same thing from source 1 alone, which is
+the "one fact per sentence, from one source" rule doing its job.
+
+This is a real run, so your own output will differ a little — the model does not
+write the same words twice.
 
 The web demo shows the same thing with the sources underneath, plus a second
 tab for comparing search methods.
@@ -106,8 +111,9 @@ This pulls 12 CSV files (~25 MB) into `data/raw/`.
 python build_index.py
 ```
 
-This takes about 4 minutes. It reads every answer, splits it into chunks, and
-turns each chunk into a vector. It only has to be done once.
+This takes about 4 minutes and writes a `chroma_db/` folder of roughly 300 MB.
+It reads every answer, splits it into chunks, and turns each chunk into a vector.
+It only has to be done once.
 
 **6. Check that everything is ready**
 
@@ -146,6 +152,12 @@ answer had to be rewritten, and "Sources" to read the passages it used.
 **Search** — the same questions, but showing the matching answers directly
 with no LLM. You can switch between Semantic, Keyword and Hybrid search to see
 how they differ. This tab works without an API key.
+
+Each result shows a score, but the three methods are not on the same scale, so
+the label says which one you are looking at: **cosine similarity** (0 to 1) for
+semantic, an unbounded **BM25 score** for keyword, and an **RRF score** for hybrid.
+RRF adds up `1 / (60 + rank)`, so its numbers are always near 0.03 no matter how
+good the match is. Compare results within a method, not across them.
 
 Try `What condition is linked to mutations in the PAH gene?` in the Search tab
 and switch between the three methods:
@@ -201,8 +213,10 @@ The eval has 48 questions with the correct answers marked, in three groups of 16
 - **Patient phrasing** — how a person actually talks: "keep bones from breaking"
 - **Exact names** — condition names with lookalikes: "Wolff-Parkinson-White"
   (not Parkinson disease), "Aicardi-Goutieres type 3" (not types 1, 2, 4, 5)
-- **Gene symbols** — only a gene code, which never appears in a question title:
-  "What condition is linked to mutations in the PAH gene?"
+- **Gene symbols** — only a gene code, which almost never appears in a question
+  title: "What condition is linked to mutations in the PAH gene?" (`DMD` is the one
+  exception of the 16: five titles mention it, which is why keyword search finds it
+  so easily.)
 
 | Method | All 48 (hit@5 / MRR) | Patient phrasing | Exact names | Gene symbols |
 |---|---|---|---|---|
@@ -245,10 +259,17 @@ showed a problem I had missed:
 | 5 | 0.94 | 0.81 | 1.00 | 1.00 |
 
 With only three slots, one wrong keyword result can push out a correct semantic
-one. Four questions that semantic search ranked first, like the kidney stone and
-hepatitis C ones, fell to fourth place or off the list. A fourth slot fixes all
-of them for about 250 extra tokens per call, and a fifth adds nothing. So the
-pipeline sends **4 sources**.
+one. Three questions that semantic search ranked first — the kidney stone, shingles
+and breast cancer ones — fell to fourth place under hybrid search, so a fourth slot
+rescues all three for about 250 extra tokens per call, and a fifth adds nothing. So
+the pipeline sends **4 sources**.
+
+A fourth slot does not rescue everything. Hybrid search loses three questions
+outright, and one of them, "Can you catch hepatitis C from sharing needles?",
+is a question semantic search had at rank 1. No number of slots brings back an
+answer the merged ranking never returned. That is the same question the answer
+eval below reports as a refusal, and it is the clearest cost of using hybrid
+search: it wins on 45 of 48 questions and pays for it on this one.
 
 Per-question ranks for all three methods are in `eval/retrieval_results.csv`.
 
@@ -263,7 +284,13 @@ scores the answers and not just the search.
 | First draft passed the fact check | 8 / 12 | 6 / 12 | 7 / 12 |
 | Needed one rewrite | 4 / 12 | 6 / 12 | 5 / 12 |
 | Final answer passed the fact check | 9 / 12 | 9 / 12 | **12 / 12** |
-| Sentences supported by their source | 81% → 91% | 77% → 92% | 82% → **100%** |
+| Sentences supported by their source | 81% → 91% | 77% → 92% | 82% → **100%** \* |
+
+\* The two percentages do not cover the same answers. Every draft made claims, so
+the first number is over all 12. The final answer for the hepatitis C question is a
+refusal, which has no sentences to score, so the second is over the 11 that made a
+claim. `python evaluate_answers.py` now prints the count next to each percentage
+instead of leaving that to be discovered.
 
 The failures were never random. Once search improved, what was left was the writer
 adding detail the sources don't have, in two shapes: gluing a fact from one source
@@ -296,7 +323,7 @@ python evaluate_answers.py --offset 2
 | A correct source was among those used | 11 / 12 | 11 / 12 |
 | First draft passed the fact check | 7 / 12 | 10 / 12 |
 | Final answer passed the fact check | 12 / 12 | 12 / 12 |
-| Sentences supported by their source | 82% → 100% | 92% → 100% |
+| Sentences supported by their source | 82% of 12 → 100% of 11 | 92% of 12 → 100% of 12 |
 
 The held-out questions did slightly better, and none of those answers was a
 refusal, so the rules are doing general work rather than fitting the questions I
@@ -307,8 +334,10 @@ One held-out question (lupus) counts as a retrieval miss because the answer I
 marked correct wasn't retrieved, but the answer it did write is properly grounded
 in other lupus pages. Strict labels undercount cases like that.
 
-Answers didn't get shorter to please the checker: they run 43 to 111 words, still
-3 to 6 sentences. What changed is one fact per sentence, with one citation.
+Answers didn't get shorter to please the checker. On the tuning set they run 43 to
+111 words and on the held-out set 32 to 130, 3 to 5 sentences either way, inside the
+3-to-6 rule the writer is given. What changed is one fact per sentence, with one
+citation.
 
 The numbers move a little between runs, because the LLM doesn't produce identical
 output twice. Per-question details are in `eval/answer_results.json`.
@@ -319,20 +348,30 @@ output twice. Per-question details are in `eval/answer_results.json`.
 python -m pytest
 ```
 
-66 tests, about 2 seconds. They don't need an API key, the index, or any LLM
-calls, because fake versions of the LLM and database are used. They check the
-cleaning rules, the chunk size limit and overlap, one result per answer, the
-search and ranking math, the citation and claim checks, the rewrite limit, the
-answer cache, the eval scoring, and the setup checker.
+74 tests, about 2 seconds. They don't need an API key, the index, or any LLM
+calls, because fake versions of the LLM and database are used. Two of them read the
+real MedQuAD files to check the eval questions, so those two skip until you run
+`python download_data.py`; the other 72 run on a fresh clone.
+
+They check the cleaning rules, the chunk size limit and overlap, one result per
+answer, the search and ranking math, where a sentence ends, the citation and claim
+checks, the rewrite limit, the answer cache, the eval scoring, and the setup checker.
+
+I also checked that the tests can actually fail. Putting each bug back on purpose —
+the old sentence splitter, the removed empty-answer guard, an unbounded result list,
+a passage window that no longer centres on the match, the raw database error — made
+exactly the test that covers it fail, five for five.
 
 ## Troubleshooting
 
 | What you see | What it means | Fix |
 |---|---|---|
 | `No API key found` | `.env` has no Groq key | `cp .env.example .env` and paste your key |
+| `Couldn't write an answer (AuthenticationError)` | `.env` has a key but no `OPENAI_API_BASE`, so the request went to OpenAI instead of Groq | Add `OPENAI_API_BASE=https://api.groq.com/openai/v1` to `.env`. `check_setup.py` now flags this |
+| `No search index found` | The index isn't built yet | `python build_index.py` |
 | "Groq's free limit was reached" | 8,000 tokens a minute or 200,000 a day used up | Wait a minute, or try tomorrow. The Search tab still works |
-| `chroma_db` errors, or no results | The index isn't built | `python build_index.py` |
-| `FileNotFoundError: No CSV files` | The data isn't downloaded | `python download_data.py` |
+| `No CSV files found` | The data isn't downloaded | `python download_data.py` |
+| `Warning: only N of 12 CSV files` | The download stopped part way | `python download_data.py` again; it skips what you already have |
 | The first question is slow | The model loads on the first run | Normal, later questions are faster |
 | Anything else | Not sure what's missing | `python check_setup.py` |
 

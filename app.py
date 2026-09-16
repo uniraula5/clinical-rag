@@ -16,6 +16,7 @@ from hybrid_search import hybrid_search
 from keyword_search import KeywordIndex
 from pipeline import QAPipeline
 from search import get_collection, semantic_search
+from verify import is_no_answer
 
 EXAMPLE_QUESTIONS = [
     "What are the early signs of type 2 diabetes?",
@@ -42,12 +43,22 @@ SOURCE_NAMES = {
 # load the index, keyword index and full answers once when the app starts
 collection = get_collection()
 keyword_index = KeywordIndex()
-pipeline = QAPipeline(collection=collection)
+# pass the keyword index in, or QAPipeline builds a second copy of the same
+# 48,978-chunk BM25 index (about 2.5 seconds and a few hundred MB wasted)
+pipeline = QAPipeline(collection=collection, keyword_index=keyword_index)
 
 SEARCH_METHODS = {
     "Semantic": lambda q, k: semantic_search(q, n_results=k, collection=collection),
     "Keyword (BM25)": lambda q, k: keyword_index.search(q, k),
     "Hybrid": lambda q, k: hybrid_search(q, n_results=k, collection=collection, keyword_index=keyword_index),
+}
+
+# the three methods score on scales that have nothing to do with each other, so
+# the number is labelled with the scale it is on instead of a bare "Score"
+SCORE_LABELS = {
+    "Semantic": "Cosine similarity",
+    "Keyword (BM25)": "BM25 score",
+    "Hybrid": "RRF score",
 }
 
 
@@ -69,7 +80,7 @@ def format_sources(sources):
         excerpt = s["text"] if len(s["text"]) <= 600 else s["text"][:600] + "..."
         blocks.append(
             f"**[{s['number']}] {s['question']}**  \n"
-            f"{source_name(s['source'])} · score {s['score']:.3f}{found_by(s)} · `{s['doc_id']}`\n\n"
+            f"{source_name(s['source'])} · RRF score {s['score']:g}{found_by(s)} · `{s['doc_id']}`\n\n"
             f"> {excerpt}"
         )
     return "\n\n".join(blocks)
@@ -90,6 +101,15 @@ def format_check(result):
     return "\n".join(lines)
 
 
+def sources_or_nothing(question):
+    # the answer already failed; if search fails too, say so instead of
+    # raising a second error out of the error handler
+    try:
+        return format_sources(pipeline.get_sources(question))
+    except Exception as error:
+        return f"_Search could not run either ({type(error).__name__}). Try `python check_setup.py`._"
+
+
 def run_ask(question):
     question = (question or "").strip()
     if not question:
@@ -98,19 +118,22 @@ def run_ask(question):
         result = pipeline.ask(question)
     except RateLimitError:
         # the free tier allows 8,000 tokens a minute and 200,000 a day
-        sources = pipeline.get_sources(question)
         message = ("**Groq's free limit was reached.** Wait a minute and try again, or try "
                    "tomorrow if the daily limit is used up. Search still works without the LLM, "
                    "and the sources this question found are below.")
-        return message, "", format_sources(sources)
+        return message, "", sources_or_nothing(question)
     except Exception as error:
-        # most likely a missing or wrong API key; the error type is shown, never its text
-        sources = pipeline.get_sources(question)
-        message = (f"**Couldn't write an answer ({type(error).__name__}).** Check that .env has "
-                   "your Groq key. The sources search found are below.")
-        return message, "", format_sources(sources)
+        # usually the key or the API address in .env; the error type is shown, never its text
+        message = (f"**Couldn't write an answer ({type(error).__name__}).** Run "
+                   "`python check_setup.py` to see whether .env is complete. "
+                   "The sources search found are below.")
+        return message, "", sources_or_nothing(question)
 
-    if result["passed"]:
+    if is_no_answer(result["answer"]):
+        # a refusal passes the fact check because it claims nothing, so the
+        # green "every sentence is supported" badge would be misleading here
+        badge = "ℹ️ **No answer given.** Search found no source that answers this, so nothing was written."
+    elif result["passed"]:
         badge = "✅ **Fact-checked:** every sentence is supported by the cited source."
     else:
         badge = "⚠️ **Some sentences could not be verified.** Check them against the sources below."
@@ -119,9 +142,9 @@ def run_ask(question):
 
 # ---------- Search tab ----------
 
-def format_results(results):
+def format_results(results, score_label="Score"):
     if not results:
-        return "No results found."
+        return "No results found. Try different words."
     blocks = []
     for r in results:
         answer = r["text"].split("\nAnswer: ", 1)[-1]
@@ -129,7 +152,7 @@ def format_results(results):
         blocks.append(
             f"### {r['rank']}. {r['question']}\n"
             f"**Source:** {source_name(r['source'])} · **Type:** {r['question_type']} · "
-            f"**Score:** {r['score']:.3f}{found_by} · `{r['doc_id']}`\n\n"
+            f"**{score_label}:** {r['score']:g}{found_by} · `{r['doc_id']}`\n\n"
             f"> {answer}\n"
         )
     return "\n---\n".join(blocks)
@@ -139,7 +162,8 @@ def run_search(query, method, n_results):
     query = (query or "").strip()
     if not query:
         return "Type a question to search."
-    return format_results(SEARCH_METHODS[method](query, int(n_results)))
+    results = SEARCH_METHODS[method](query, int(n_results))
+    return format_results(results, SCORE_LABELS[method])
 
 
 # ---------- Layout ----------

@@ -21,12 +21,20 @@ def check_env(env_path=PROJECT_DIR / ".env"):
 
     from dotenv import dotenv_values
 
-    key = dotenv_values(env_path).get("OPENAI_API_KEY", "")
+    settings = dotenv_values(env_path)
+    key = settings.get("OPENAI_API_KEY", "")
     if not key or key == "your-groq-key":
         return {"name": "API key (.env)", "ok": False,
                 "detail": ".env has no real key yet",
                 "fix": "get a free key at https://console.groq.com and put it in .env"}
-    return {"name": "API key (.env)", "ok": True, "detail": "key found", "fix": ""}
+
+    # without OPENAI_API_BASE the requests go to OpenAI instead of Groq, and a
+    # Groq key is rejected there, which looks exactly like a bad key
+    if not settings.get("OPENAI_API_BASE"):
+        return {"name": "API key (.env)", "ok": False,
+                "detail": "key found, but OPENAI_API_BASE is missing so requests would go to OpenAI",
+                "fix": "add OPENAI_API_BASE=https://api.groq.com/openai/v1 to .env (see .env.example)"}
+    return {"name": "API key (.env)", "ok": True, "detail": "key and Groq address found", "fix": ""}
 
 
 def check_data(raw_dir=PROJECT_DIR / "data" / "raw"):

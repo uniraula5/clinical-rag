@@ -12,6 +12,7 @@ from pathlib import Path
 import pandas as pd
 
 RAW_DIR = Path(__file__).parent / "data" / "raw"
+EXPECTED_FILES = 12
 
 
 def source_from_filename(path):
@@ -26,7 +27,13 @@ def source_from_filename(path):
 def load_medquad(raw_dir=RAW_DIR):
     csv_files = sorted(raw_dir.glob("*.csv"))
     if not csv_files:
-        raise FileNotFoundError(f"No CSV files found in {raw_dir}")
+        raise FileNotFoundError(
+            f"No CSV files found in {raw_dir}. Download them with: python download_data.py"
+        )
+    if len(csv_files) < EXPECTED_FILES:
+        # a half-finished download would quietly build a half-finished index
+        print(f"Warning: only {len(csv_files)} of {EXPECTED_FILES} CSV files are in {raw_dir}. "
+              "Run python download_data.py to get the rest.")
 
     frames = []
     for path in csv_files:

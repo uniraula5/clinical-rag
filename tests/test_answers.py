@@ -24,9 +24,32 @@ def test_format_sources():
     ("It is rare [1]. It is inherited [2].", ["It is rare [1].", "It is inherited [2]."]),
     ("It is rare. [1] It is inherited [2].", ["It is rare. [1]", "It is inherited [2]."]),
     ("Dose is 2.5 mg [1].", ["Dose is 2.5 mg [1]."]),
+    # a sentence can start with a number or a lowercase word. These used to be
+    # glued to the sentence before them and checked as one.
+    ("About 1 in 3,500 boys is affected [1]. 2.5 mg is typical [2].",
+     ["About 1 in 3,500 boys is affected [1].", "2.5 mg is typical [2]."]),
+    ("The CFTR gene is involved [1]. mRNA is then produced [2].",
+     ["The CFTR gene is involved [1].", "mRNA is then produced [2]."]),
+    # but "U.S." is not the end of a sentence
+    ("It is common in the U.S. population [1]. Symptoms vary [2].",
+     ["It is common in the U.S. population [1].", "Symptoms vary [2]."]),
 ])
 def test_split_sentences(text, expected):
     assert split_sentences(text) == expected
+
+
+def test_uncited_sentence_is_caught_even_after_a_cited_one():
+    # the whole point of the splitter fix: this used to count as one sentence,
+    # so the missing citation on the second half went unnoticed
+    sentences = split_sentences("Copper builds up in the liver [1]. 2 in 100 people are carriers.")
+    assert len(check_citations(sentences, n_sources=1)) == 1
+
+
+def test_empty_answer_does_not_pass(monkeypatch):
+    monkeypatch.setattr(verify, "chat_json", lambda system, user: pytest.fail("no LLM needed"))
+    result = verify_answer("   ", "sources", n_sources=2)
+    assert not result["passed"]
+    assert result["problems"] == ["The answer was empty."]
 
 
 def test_check_citations():
@@ -84,6 +107,9 @@ def test_passage_for_long_answer_is_centered_on_matched_chunk():
 
     assert len(words) == 350
     assert "w600" in words and "w699" in words
+    # the matched chunk must sit in the middle, with context on both sides.
+    # Without that, the window would simply start at the chunk (w600-w949).
+    assert "w475" in words and "w824" in words
     assert passage.startswith("... ") and passage.endswith(" ...")
 
 

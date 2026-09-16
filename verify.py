@@ -26,9 +26,16 @@ Reply with JSON only, in this shape:
 {"results": [{"sentence": 1, "supported": true, "reason": "short reason"}]}"""
 
 
+# Every sentence in an answer ends with a citation, so "[2]" or "[2]." is the
+# reliable place to split. The capital-letter rule below is the backup for a
+# sentence the writer forgot to cite. Splitting only on a capital letter used to
+# glue "... [1]. 2.5 mg is typical [2]." into one sentence, which let an uncited
+# sentence ride on the previous sentence's citation.
+SENTENCE_END = re.compile(r"(?<=\])\s+|(?<=\]\.)\s+|(?<=[.!?])\s+(?=[A-Z])")
+
+
 def split_sentences(text):
-    # split after . ! ? or a closing ] when the next sentence starts with a capital letter
-    parts = re.split(r"(?<=[.!?\]])\s+(?=[A-Z])", text.strip())
+    parts = SENTENCE_END.split(text.strip())
     return [p.strip() for p in parts if p.strip()]
 
 
@@ -78,6 +85,10 @@ def verify_answer(answer, sources_text, n_sources):
         return {"passed": True, "claims": [], "problems": []}  # nothing claimed, nothing to check
 
     sentences = split_sentences(answer)
+    if not sentences:
+        # an empty reply used to pass: no sentences meant no problems to find
+        return {"passed": False, "claims": [], "problems": ["The answer was empty."]}
+
     problems = check_citations(sentences, n_sources)
     claims = check_claims(sentences, sources_text)
     for c in claims:

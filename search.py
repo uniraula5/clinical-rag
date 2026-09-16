@@ -16,9 +16,21 @@ from build_index import CHROMA_DIR, COLLECTION_NAME, get_embedding_function
 CHUNKS_PER_RESULT = 4
 
 
+MISSING_INDEX_HELP = (
+    "No search index found. Build it once with:\n"
+    "    python build_index.py      (about 4 minutes)\n"
+    "Run `python check_setup.py` if you are not sure what else is missing."
+)
+
+
 def get_collection(chroma_dir=CHROMA_DIR):
     client = chromadb.PersistentClient(path=str(chroma_dir))
-    return client.get_collection(COLLECTION_NAME, embedding_function=get_embedding_function())
+    try:
+        return client.get_collection(COLLECTION_NAME, embedding_function=get_embedding_function())
+    except Exception:
+        # without this, running anything before build_index.py ends in a
+        # chromadb traceback that never says which command fixes it
+        raise RuntimeError(MISSING_INDEX_HELP) from None
 
 
 def semantic_search(query, n_results=5, collection=None):
@@ -50,12 +62,20 @@ def semantic_search(query, n_results=5, collection=None):
     return results
 
 
+EXCERPT_CHARS = 200
+
+
 def print_results(query, results):
     print(f'\nQuery: "{query}"\n')
+    if not results:
+        print("No results. Try different words, or check the index with python check_setup.py\n")
+        return
     for r in results:
-        print(f"{r['rank']}. [{r['score']:.3f}] {r['source']} | {r['question']}")
+        print(f"{r['rank']}. [{r['score']:g}] {r['source']} | {r['question']}")
         answer = r["text"].split("\nAnswer: ", 1)[-1]
-        print(f"   {answer[:200]}...\n")
+        # only add "..." when something was actually cut off
+        excerpt = answer[:EXCERPT_CHARS] + ("..." if len(answer) > EXCERPT_CHARS else "")
+        print(f"   {excerpt}\n")
 
 
 if __name__ == "__main__":
