@@ -5,7 +5,7 @@ import pytest
 
 import clean_data
 from clean_data import clean_question, clean_text, is_only_a_question
-from load_data import load_medquad, source_from_filename
+from load_data import REQUIRED_COLUMNS, load_medquad, source_from_filename
 
 
 @pytest.mark.parametrize("filename, expected", [
@@ -97,3 +97,15 @@ def test_clean_medquad_applies_every_rule(monkeypatch):
     # question_id 1 appears twice in the same source, so the second one gets a counter
     assert list(clean["doc_id"]) == ["S1_1", "S1_1_1"]
     assert list(clean.columns) == ["doc_id", "source", "question_type", "question", "answer"]
+
+
+def test_a_corrupted_csv_says_which_file_to_delete(tmp_path):
+    # a blocked download can still be saved with a .csv name
+    (tmp_path / "1_CancerGov_QA.csv").write_text("<html>404: Not Found</html>\n")
+    with pytest.raises(ValueError) as error:
+        load_medquad(raw_dir=tmp_path)
+
+    message = str(error.value)
+    assert "1_CancerGov_QA.csv" in message
+    assert "python download_data.py" in message
+    assert all(column in message for column in REQUIRED_COLUMNS)

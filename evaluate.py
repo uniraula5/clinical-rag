@@ -11,9 +11,12 @@ Runs semantic, keyword and hybrid search on the same questions to compare them.
 
 import csv
 import json
+import re
 from collections import defaultdict
 from pathlib import Path
+from statistics import median
 
+from clean_data import clean_medquad
 from hybrid_search import hybrid_search
 from keyword_search import KeywordIndex
 from search import get_collection, semantic_search
@@ -26,6 +29,42 @@ K = 5
 def load_test_cases(path=TEST_CASES_PATH):
     with open(path) as f:
         return json.load(f)
+
+
+def words_in(text):
+    return set(re.findall(r"[a-z0-9]+", text.lower()))
+
+
+def title_overlap(query, titles):
+    """How much of the question is already in the title of a correct answer.
+
+    1.00 means every word of the question also appears in the title, so finding
+    it is close to looking up a heading. This is the honest way to say how hard
+    a test question really is, instead of trusting the label I gave it.
+    """
+    query_words = words_in(query)
+    if not query_words:
+        return 0.0
+    return max((len(query_words & words_in(t)) / len(query_words) for t in titles), default=0.0)
+
+
+def print_overlap_table(test_cases, titles_by_doc_id):
+    by_category = defaultdict(list)
+    skipped = 0
+    for case in test_cases:
+        titles = [titles_by_doc_id[d] for d in case["relevant_doc_ids"] if d in titles_by_doc_id]
+        if not titles:
+            skipped += 1
+            continue
+        by_category[case["category"]].append(title_overlap(case["query"], titles))
+
+    print("\n=== How much of each question is already in the answer's title ===")
+    print(f"  {'category':13s}{'median':>9s}{'near-copies':>13s}")
+    for category, scores in sorted(by_category.items()):
+        near = sum(1 for s in scores if s >= 0.8)
+        print(f"  {category:13s}{median(scores):>9.0%}{near:>8d}/{len(scores):<4d}")
+    if skipped:
+        print(f"  ({skipped} question(s) skipped: no labelled answer is in the data)")
 
 
 def first_hit_rank(results, relevant_ids):
@@ -147,4 +186,8 @@ if __name__ == "__main__":
 
     print_comparison(all_rows)
     print_hit_at_k_table(all_rows)
+
+    data = clean_medquad(verbose=False)
+    print_overlap_table(test_cases, dict(zip(data["doc_id"], data["question"])))
+
     save_ranks(all_rows, test_cases)

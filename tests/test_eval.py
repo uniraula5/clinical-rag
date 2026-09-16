@@ -6,7 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from evaluate import evaluate, first_hit_rank, hit_at_k, load_test_cases, print_hit_at_k_table, save_ranks, summarize
+from evaluate import (evaluate, first_hit_rank, hit_at_k, load_test_cases, print_hit_at_k_table,
+                      print_overlap_table, save_ranks, summarize, title_overlap)
 from evaluate_answers import HOLDOUT_PATH, RESULTS_PATH, results_path_for, select_cases
 
 HAS_DATA = any((Path(__file__).parent.parent / "data" / "raw").glob("*.csv"))
@@ -120,3 +121,33 @@ def test_results_go_to_separate_files():
     assert results_path_for(0) == RESULTS_PATH
     assert results_path_for(2) == HOLDOUT_PATH
     assert results_path_for(0) != results_path_for(2)
+
+
+def test_title_overlap_scores_how_much_of_the_question_is_in_the_title():
+    # every word of the question is in the title: finding it is close to a lookup
+    assert title_overlap("Is Huntington disease inherited?",
+                         ["Is Huntington disease inherited?"]) == 1.0
+    # a real paraphrase shares almost nothing with the title
+    assert title_overlap("keep bones from breaking",
+                         ["What is (are) Osteoporosis?"]) == 0.0
+    # the easiest of the labelled answers is the one that counts
+    assert title_overlap("What causes gout?",
+                         ["Something else entirely", "What causes gout?"]) == 1.0
+
+
+def test_title_overlap_of_a_partly_matching_question():
+    # words are matched whole, with no stemming: of "how is gout treated" only
+    # "gout" is in the title, because "treated" and "treatments" are different words
+    assert title_overlap("how is gout treated",
+                         ["What are the treatments for gout?"]) == pytest.approx(0.25)
+    assert title_overlap("symptoms of gout", ["What are the symptoms of gout?"]) == 1.0
+
+
+def test_overlap_table_skips_questions_whose_answer_is_not_in_the_data(capsys):
+    cases = [
+        {"id": "a", "category": "paraphrase", "query": "what is gout", "relevant_doc_ids": ["D1"]},
+        {"id": "b", "category": "paraphrase", "query": "what is gout", "relevant_doc_ids": ["GONE"]},
+    ]
+    print_overlap_table(cases, {"D1": "What is (are) gout?"})
+    out = capsys.readouterr().out
+    assert "1 question(s) skipped" in out

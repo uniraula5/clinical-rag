@@ -18,7 +18,7 @@ is medical advice.
   method ranked the correct answer for every question).
 - **The whole answer flow** is `pipeline.py`, about 150 lines: search, write,
   fact-check, rewrite once.
-- **`python -m pytest`** runs 79 tests in about 2 seconds with no API key, no
+- **`python -m pytest`** runs 83 tests in about 2 seconds with no API key, no
   index and no LLM calls. (Two of them check the eval questions against the real
   data, so they skip until you run `python download_data.py`.)
 
@@ -254,6 +254,39 @@ left out, every question uses the same wording, and correct answers were picked
 by a rule instead of by hand: any "genetic changes" or "causes" answer whose
 text contains "<SYMBOL> gene".
 
+#### How hard are these questions really?
+
+A test question is easy if its words are already in the title of the answer I want,
+because then finding it is close to looking up a heading. `python evaluate.py`
+measures that instead of asking you to trust my labels:
+
+```
+=== How much of each question is already in the answer's title ===
+  category        median  near-copies
+  exact_term        100%      11/16
+  gene_symbol        30%       0/16
+  paraphrase         24%       1/16
+```
+
+**So the 1.00 on exact names is not the achievement it looks like.** Eleven of those
+sixteen questions share every word with the title of the correct answer — `Is
+Huntington disease inherited?` is the title, letter for letter. That group is really
+a sanity check that the index returns a document when you ask for it almost exactly.
+It is worth keeping for that reason, but it should not be read as evidence that the
+search is good, and the fact that all three methods do well there is expected rather
+than impressive.
+
+The two groups that carry the actual evidence are the ones where the question and
+the title barely share words: **paraphrase (24%) and gene symbols (30%)**. Those are
+also the two where the methods disagree most, which is what makes the comparison
+worth anything.
+
+One question is mislabelled and I am leaving it in place rather than quietly moving
+it: `p16` sits in the paraphrase group but is a 100% near-copy, because the MedQuAD
+title it matches is itself malformed ("Who is at risk for Am I at Risk for Type 2
+Diabetes?"). Moving a question after seeing how it scored is how test sets get
+flattering.
+
 ### How many sources should the Ask tab send?
 
 The pipeline only hands its top few answers to the LLM, so what matters there is
@@ -387,10 +420,10 @@ output twice. Per-question details are in `eval/answer_results.json`.
 python -m pytest
 ```
 
-79 tests, about 2 seconds. They don't need an API key, the index, or any LLM
+83 tests, about 2 seconds. They don't need an API key, the index, or any LLM
 calls, because fake versions of the LLM and database are used. Two of them read the
 real MedQuAD files to check the eval questions, so those two skip until you run
-`python download_data.py`; the other 77 run on a fresh clone.
+`python download_data.py`; the other 81 run on a fresh clone.
 
 They check the cleaning rules, the chunk size limit and overlap, one result per
 answer, the search and ranking math, where a sentence ends, the citation and claim
@@ -411,6 +444,7 @@ exactly the test that covers it fail, five for five.
 | "Groq's free limit was reached" | 8,000 tokens a minute or 200,000 a day used up | Wait a minute, or try tomorrow. The Search tab still works |
 | `No CSV files found` | The data isn't downloaded | `python download_data.py` |
 | `Warning: only N of 12 CSV files` | The download stopped part way | `python download_data.py` again; it skips what you already have |
+| `<file> is missing the column(s) ...` | A download was blocked and saved an error page as a `.csv` | Delete that one file and run `python download_data.py` again |
 | The first question is slow | The model loads on the first run | Normal, later questions are faster |
 | Anything else | Not sure what's missing | `python check_setup.py` |
 

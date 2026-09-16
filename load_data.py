@@ -13,6 +13,7 @@ import pandas as pd
 
 RAW_DIR = Path(__file__).parent / "data" / "raw"
 EXPECTED_FILES = 12
+REQUIRED_COLUMNS = ["question", "question_id", "question_type", "answer"]
 
 
 def source_from_filename(path):
@@ -38,6 +39,15 @@ def load_medquad(raw_dir=RAW_DIR):
     frames = []
     for path in csv_files:
         df = pd.read_csv(path)
+        missing = [c for c in REQUIRED_COLUMNS if c not in df.columns]
+        if missing:
+            # a download that returned an error page still saves as a .csv, and
+            # without this the failure is a KeyError deep inside the cleaning step
+            raise ValueError(
+                f"{path.name} is missing the column(s) {missing}. The download was "
+                f"probably interrupted or blocked. Delete {path.name} and run "
+                "python download_data.py again."
+            )
         df["source"] = source_from_filename(path)
         frames.append(df)
 

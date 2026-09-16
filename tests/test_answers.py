@@ -164,7 +164,12 @@ def test_ask_answers_the_same_question_from_memory(monkeypatch):
 
     assert second is first          # the saved result comes straight back
     assert len(writes) == 1         # the LLM ran only once
-    assert pipe.ask("Different question?", use_cache=False) is not first
+
+    # use_cache=False has to re-answer the SAME question. Asking a different one
+    # would pass even if use_cache were ignored completely, which proves nothing.
+    again = pipe.ask("Same question?", use_cache=False)
+    assert again is not first
+    assert len(writes) == 2
 
 
 def test_get_sources_uses_hybrid_search_with_both_indexes(monkeypatch):
